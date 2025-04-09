@@ -1,0 +1,42 @@
+module alu_expandedwithmuxes (
+    input rd1[32], 
+    input rd2[32], 
+    input asel[2],
+    input bsel[2],
+    input wdsel[2],
+    input alufn_Signal[6],
+    output alu_output[32]
+) {
+    
+    alu alu_chopsticks
+    always {
+        alu_chopsticks.alufn = alufn_Signal
+        //using case switch statements as the muxes for alu
+        case(asel){
+            b00 : alu_chopsticks.a = rd1
+            b01: alu_chopsticks.a = 3
+            b10: alu_chopsticks.a = 5
+            b11: alu_chopsticks.a = 10
+            default: //need to default because of branching states that do not use the muxes at all
+                alu_chopsticks.a = 0
+        }
+        case(bsel){
+            b00: alu_chopsticks.b = rd2
+            b01: alu_chopsticks.b = 0
+            b10: alu_chopsticks.b = 1
+            b11: alu_chopsticks.b = 2
+            default:
+                 alu_chopsticks.b = 0
+        }
+        
+        case(wdsel){
+            b01: alu_output = hFFFFFFFF //just to light up all fingers of the winner
+            b10: alu_output = 0
+            default:
+                alu_output = alu_chopsticks.out
+            
+        }
+        
+        
+    }
+}

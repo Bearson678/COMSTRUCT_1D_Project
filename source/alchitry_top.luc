@@ -1,0 +1,111 @@
+module alchitry_top (
+    input clk,              // 100MHz clock
+    input rst_n,            // reset button (active low)
+    output led[8],          // 8 user controllable LEDs
+    input usb_rx,            // USB->Serial input
+    output usb_tx,           // USB->Serial output
+    output io_led[3][8],     // LEDs on IO Shield
+    output io_segment[8],        // 7-segment LEDs on IO Shield
+    output io_select[4],        // Digit select on IO Shield
+    input io_button[5],      // 5 buttons on IO Shield
+    input io_dip[3][8]       // DIP switches on IO Shield
+) {
+   
+    sig rst  
+    // alchitry_top.luc 
+
+    const CLOCK_DIVIDER = $is_sim() ? 11 : 26       
+    const SLOW_CLOCK_DIV = $is_sim() ? 9 : 21  // put 9 for sim, 26 for hardware
+    const CLK_FREQ = $is_sim() ? 1000 : 10000000
+    const SEVEN_SEG_DIV = $is_sim() ? 3 : 16 // put 3 for sim, 16 for hardware
+    .clk(clk) {
+        // The reset conditioner is used to synchronize the reset signal to the FPGA
+        // clock. This ensures the entire FPGA comes out of reset at the same time.
+        reset_conditioner reset_cond
+        
+        //because the fpga itself has 5 buttons, i'll code the p2split to be a io_dip switch
+        edge_detector p1l_button_edge_detector(#RISE(1),#FALL(0))
+        edge_detector p1r_button_edge_detector(#RISE(1),#FALL(0))
+        edge_detector p2l_button_edge_detector(#RISE(1),#FALL(0))
+        edge_detector p2r_button_edge_detector(#RISE(1),#FALL(0))
+        edge_detector p1split_button_edge_detector(#RISE(1),#FALL(0))
+        
+        button_conditioner p1l_button_cond(#CLK_FREQ(CLK_FREQ))
+        button_conditioner p1r_button_cond(#CLK_FREQ(CLK_FREQ))
+        button_conditioner p2l_button_cond(#CLK_FREQ(CLK_FREQ))
+        button_conditioner p2r_button_cond(#CLK_FREQ(CLK_FREQ))
+        button_conditioner p1split_button_cond(#CLK_FREQ(CLK_FREQ))
+        
+        
+        
+        .rst(rst){
+            chopsticks_datapath cd(#SLOW_CLOCK_DIV(SLOW_CLOCK_DIV),#CLOCK_DIVIDER(CLOCK_DIVIDER))
+            multi_seven_seg seg(#DIV(SEVEN_SEG_DIV))
+        }
+    }
+    bin_to_dec bin_to_dec_converter(#DIGITS(4))
+    always{
+        //Default FPGA settings
+        reset_cond.in = ~rst_n
+        rst =reset_cond.out
+        usb_tx = usb_rx
+        led = 8h00             // turn LEDs off
+        io_led = 3x{{8h00}}    // turn LEDs off
+        io_segment = 8hff          // turn segments off
+        io_select = 4hf           // select no digits
+        
+        //mapping the button conditioning to the button inputs
+        p1l_button_cond.in = io_button[0]
+        p1r_button_cond.in = io_button[1]
+        p2l_button_cond.in = io_button[2]
+        p2r_button_cond.in = io_button[3]
+        p1split_button_cond.in = io_button[4]
+        
+        //mapping the button conditioning output to the edge detector
+        p1l_button_edge_detector.in = p1l_button_cond.out
+        p1r_button_edge_detector.in = p1r_button_cond.out
+        p2l_button_edge_detector.in = p2l_button_cond.out
+        p2r_button_edge_detector.in = p2r_button_cond.out
+        p1split_button_edge_detector.in = p1split_button_cond.out
+        
+        //mapping datapath's button input to the edge_detector output
+        //also map the p2split button input to the io_dip[0][0]
+        cd.p1l_button = p1l_button_edge_detector.out
+        cd.p1r_button = p1r_button_edge_detector.out
+        cd.p2l_button = p2l_button_edge_detector.out
+        cd.p2r_button = p2r_button_edge_detector.out
+        cd.p1split = p1split_button_edge_detector.out
+        cd.p2split = io_dip[0][0]
+        
+        //map datapath output to leds
+        io_led[2][7:4] = cd.p1l_score_out[3:0] 
+        io_led[2][3:0] = cd.p1r_score_out[3:0] 
+        io_led[1][7:4] = cd.p2l_score_out[3:0] 
+        io_led[1][3:0] = cd.p2r_score_out[3:0] 
+        io_led[0][7] = cd.p1l_avail[0] 
+        io_led[0][6]= cd.p1r_avail[0] 
+        io_led[0][5]= cd.p2l_avail[0] 
+        io_led[0][4]= cd.p2r_avail[0] 
+        io_led[0][3:0] = cd.timer_led_out[3:0] 
+        led[7:4] = cd.debugging
+        led[0] = cd.slow_clock_out 
+        
+        
+        
+        //update 7segments
+        seg.values = 4x{{4b0}} // default to all 0 first
+        bin_to_dec_converter.value = cd.timer_led_out[3:0]
+        seg.values = bin_to_dec_converter.digits
+        io_segment = ~seg.seg
+        io_select = ~seg.sel
+        
+        
+        
+        
+        
+        
+        
+        
+        
+}
+}

@@ -1,0 +1,9 @@
+module divider2 (
+    input a[32], // dividend
+    output d[32] // a/2
+  ) {
+
+  always {
+    d = a/2;
+  }
+}

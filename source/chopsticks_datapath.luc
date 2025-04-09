@@ -1,0 +1,228 @@
+module chopsticks_datapath #(
+    SLOW_CLOCK_DIV ~21 : SLOW_CLOCK_DIV >0,
+    CLOCK_DIVIDER ~26 : CLOCK_DIVIDER>0
+)(
+    // Building of Datapath, this should be roughly be right, all the necessary connections are made
+    //Inputs and outputs are external now, meaning the inputs are going to be from button presses and outputs are going to the LEDs to be displayed
+    input p1l_button,
+    input p1r_button,
+    input p2r_button,
+    input p2l_button,
+    input p1split,
+    input p2split,
+    input clk,  // clock
+    input rst,  // reset
+    output p1l_score_out[32],
+    output p1r_score_out[32],
+    output p2l_score_out[32],
+    output p2r_score_out[32],
+    output p1l_avail[32],
+    output p1r_avail[32],
+    output p2l_avail[32],
+    output p2r_avail[32],
+    output timer_led_out [32],
+    output debugging[4],
+    output slow_clock_out
+) {
+
+    alu_expandedwithmuxes game_alu
+
+    
+    
+    .clk(clk){
+        // Using of counter module to count down, 
+        counter game_timer_clock(#SIZE(1),#DIV(SLOW_CLOCK_DIV),#UP(1),.rst(rst))
+        counter slow_clk(#SIZE(1), #DIV(CLOCK_DIVIDER),.rst(rst))
+        random_number_generator generator(.slow_clk(slow_clk.value), .refresh(rst))
+        edge_detector edge_detector_game_timer(#RISE(1),#FALL(0),.in(game_timer_clock.value))
+        
+        //instantiating the FSM and connecting the inputs of the FSM to inputs of datapath
+        chopsticks_fsm chopsticks_fsm(
+            .p1l_button(p1l_button),
+            .p1r_button(p1r_button),
+            .p2l_button(p2l_button),
+            .p2r_button(p2r_button),
+            .p1split(p1split),
+            .p2split(p2split),
+            .decrease_timer(edge_detector_game_timer.out),
+            .rst(rst),
+            .rng(generator.out[0])
+            
+        )
+        //instantiating the REGFILE and connecting the inputs of the REGFILE to inputs of datapath
+        game_regfiles game_regfiles(
+            .we(chopsticks_fsm.regfile_we),
+            .wa(chopsticks_fsm.regfile_wa),
+            .ra1(chopsticks_fsm.regfile_ra1),
+            .ra2(chopsticks_fsm.regfile_ra2),
+            .rst(rst)
+            
+        )
+    }
+    
+    
+    always {
+        // connecting the regfile RD2 to the FSM
+        chopsticks_fsm.regfile_rd2 = game_regfiles.rd2
+        
+        
+        //connecting the regfile and fsm outputs to the ALU section
+        game_alu.rd1 = game_regfiles.rd1
+        game_alu.rd2 = game_regfiles.rd2
+        game_alu.asel = chopsticks_fsm.asel   
+        game_alu.bsel = chopsticks_fsm.bsel
+        game_alu.wdsel = chopsticks_fsm.wdsel
+        game_alu.alufn_Signal = chopsticks_fsm.alufn
+        
+        
+        //connecting the write data of regfile to the output of the alu 
+        game_regfiles.data = game_alu.alu_output
+        
+        //connect output of datapath with outputs from the regfile
+        p1l_score_out = game_regfiles.p1l_score_out 
+        p1r_score_out = game_regfiles.p1r_score_out 
+        p2l_score_out = game_regfiles.p2l_score_out 
+        p2r_score_out = game_regfiles.p2r_score_out 
+        p1l_avail = game_regfiles.p1l_avail_out 
+        p1r_avail = game_regfiles.p1r_avail_out 
+        p2l_avail = game_regfiles.p2l_avail_out 
+        p2r_avail = game_regfiles.p2r_avail_out 
+        timer_led_out = game_regfiles.timer_out 
+        debugging = chopsticks_fsm.debug
+        slow_clock_out = game_timer_clock.value
+        
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,31 @@
+// rca.luc
+module rca #(
+    SIZE ~ 32 : SIZE > 1
+)(
+    input a[SIZE],
+    input b[SIZE],
+    input cin,
+    output s[SIZE]
+  ) {
+
+  fa fa[32]; //instantiate 32 copies of the Full Adder
+
+  always {
+    // inputs for FA
+    fa.a = a
+    fa.b = b
+    fa.cin = 0;
+    
+        
+    repeat(i, 32){
+        if (i == 0){
+            fa.cin[0] = cin // first FA will take given cin input
+        }
+        else{
+            fa.cin[i] = fa.cout[i-1] //Subsequent FA will take the cout of the previous FA
+        }
+    }
+      
+    s = fa.s; // connect the output bits
+  }
+}

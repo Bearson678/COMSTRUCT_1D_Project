@@ -1,0 +1,100 @@
+module alu (
+    input a[32],
+    input b[32],
+    input alufn[6],
+    output out[32],
+    output z,
+    output v,
+    output n
+) {
+    // Instantiate the combinational logic units
+    adder adder1(#SIZE(32));
+    compare compare1;
+    boolean boolean1;
+    shifter shifter1;
+    multiplier multiplier1
+    divider2 divider2_1
+    sig out_sig[32]
+    //muxes to be usedd for us to select the approriate CLUs
+    //mux_4 mux4_final32[32]
+    //mux_4 mux4_final32_1[32]
+    
+    always {
+    // assign values to the input and output ports of each CLUs
+    adder1.a = a;
+    adder1.b = b;
+    adder1.alufn_signal = alufn;
+
+    z = adder1.z;
+    v = adder1.v;
+    n = adder1.n;
+    
+    //Compare uses the z,v and n values from the adder CLUs for the compare logic output
+    compare1.z = adder1.z
+    compare1.v = adder1.v
+    compare1.n = adder1.n
+    compare1.alufn = alufn
+    
+    boolean1.a = a
+    boolean1.b = b
+    boolean1.alufn = alufn
+        
+    shifter1.a = a
+    shifter1.b = b[4:0]
+    shifter1.alufn = alufn
+        
+    multiplier1.a = a
+    multiplier1.b = b
+        
+    divider2_1.a = a
+        
+    case(alufn){
+            6h00: // ADD
+            //out_sig = a+b
+                   out_sig = adder1.out
+            6h01: // SUB
+                out_sig = adder1.out
+            6h02: // MUL
+                out_sig = multiplier1.mul
+            6h03://DIV
+                out_sig = divider2_1.d
+            6h18: // BITWISE AND
+                out_sig = boolean1.bool
+            6h1E: // BITWISE OR 
+                out_sig = boolean1.bool
+            6h16: // BITWISE XOR
+                out_sig = boolean1.bool
+            6h1A: // "A"
+                out_sig = boolean1.bool
+            6h1C:// "B"
+                out_sig = boolean1.bool
+            6h20: // SHL 
+                out_sig = shifter1.shift
+            6h21: // SHR 
+                out_sig = shifter1.shift
+            6h23: // SRA 
+                out_sig = shifter1.shift
+            6h33: // CMPEQ 
+            //out_sig = a == b
+                out_sig = c{31b0,compare1.cmp} 
+            6h35: // CMPLT 
+                out_sig = c{31b0,compare1.cmp} 
+            6h37: // CMPLE
+                out_sig = c{31b0,compare1.cmp} 
+            
+            
+            default:
+                out_sig = 0
+           
+            
+        }
+        out = out_sig
+
+        
+        
+        
+        
+        
+        
+    }
+}

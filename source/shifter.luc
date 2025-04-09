@@ -1,0 +1,67 @@
+module shifter (
+    input a[32],
+    input b[5],
+    input alufn[6],
+    output shift[32]
+) {
+    //Instantiating 5 copies of the shifter modules for each shift operation (Left, right and right arithmetic)
+    x_bitshiftleft xbitleftshift[5](#SHIFT({5d1,5d2,5d4,5d8,5d16}))
+    x_bitshiftright xbitrightshift[5](#SHIFT({5d1,5d2,5d4,5d8,5d16}))
+    x_bitshiftrightsigned xbitrightsignshift[5](#SHIFT({5d1,5d2,5d4,5d8,5d16}))
+    always {
+       //setting default values for all building block modules
+       xbitleftshift.a = 5x{{32b0}} 
+       xbitleftshift.shift = 0
+       xbitleftshift.pad = 0
+       shift = xbitleftshift.out[0]
+       xbitrightshift.a = 5x{{32b0}} 
+       xbitrightshift.shift = 0
+       xbitrightshift.pad = 0
+       xbitrightsignshift.a = 5x{{32b0}} 
+       xbitrightsignshift.pad = 0
+       xbitrightsignshift.shift = 0
+
+       repeat(i,5){ //for the 5 copies of the shift left, right and right arithmetic modules
+            if(i==0){
+                // assign the relevant pading, instantiate the initial input to be a and the inital selector input to be b[4-i]
+                // to the starting 4-1 mux of each shift operation
+                xbitleftshift.a[i] = a
+                xbitleftshift.shift[i] = b[4-i]
+                xbitleftshift.pad[i] = 0
+                xbitrightshift.a[i] = a
+                xbitrightshift.shift[i] = b[4-i]
+                xbitrightshift.pad[i] = 0
+                xbitrightsignshift.a[i] = a
+                xbitrightsignshift.shift[i] = b[4-i]
+                xbitrightsignshift.pad[i] = a[31]
+            }
+            //subsequent muxes will have their .a inputs to be the output of the previous mux, the padding will remain the same
+            //while the selector input will still depend on the value of i
+            else{
+                xbitleftshift.a[i] = xbitleftshift.out[i-1]
+                xbitleftshift.shift[i] = b[4-i]
+                xbitleftshift.pad[i] =  0
+                xbitrightshift.a[i] = xbitrightshift.out[i-1]
+                xbitrightshift.shift[i] = b[4-i]
+                xbitrightshift.pad[i] = 0    
+                xbitrightsignshift.a[i] = xbitrightsignshift.out[i-1]
+                xbitrightsignshift.shift[i] = b[4-i]
+                xbitrightsignshift.pad[i] = a[31]  
+               }
+        }
+        
+        //case switch statement to decide which shift operation to use 
+       case(alufn[1:0]){
+            b00:
+            shift = xbitleftshift.out[4]
+            b01:
+            shift = xbitrightshift.out[4]
+            b11:
+            shift = xbitrightsignshift.out[4]
+            default:
+            shift = 0
+        }
+
+}
+}
+

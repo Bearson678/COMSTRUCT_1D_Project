@@ -1,0 +1,117 @@
+module game_regfiles (
+    input clk,  // clock
+    input rst,  // reset
+    input wa[4],
+    input we,
+    input data[32],
+    input ra1[4],
+    input ra2[4],
+    output rd1[32],
+    output rd2[32],
+    output p1l_score_out[32],
+    output p1r_score_out[32],
+    output p2l_score_out[32],
+    output p2r_score_out[32],
+    output p1l_avail_out[32],
+    output p1r_avail_out[32],
+    output p2l_avail_out[32],
+    output p2r_avail_out[32],
+    output timer_out[32]
+) {
+    .clk(clk){
+        .rst(rst){
+            //REGISTERS FOR STORING DATA
+            //By right all INIT to 0 except for Hand avail, but for the sake of testing, will need to hardscore some values.
+            dff p1l_score[32](#INIT(1))
+            dff p1r_score[32](#INIT(1))
+            dff p2l_score[32](#INIT(1))
+            dff p2r_score[32](#INIT(1))
+            dff p1l_avail[32](#INIT(1))
+            dff p1r_avail[32](#INIT(1))
+            dff p2l_avail[32](#INIT(1))
+            dff p2r_avail[32](#INIT(1))
+            dff timer[32](#INIT(0))
+            dff temp1[32](#INIT(0))
+            dff temp2[32](#INIT(0))
+            dff temp3[32](#INIT(0))
+            dff temp4[32](#INIT(0))
+            dff current_player[32](#INIT(0))
+            dff timerLED_out[32](#INIT(0))
+        }
+    }
+    always {
+        // case switch statements for the REGFILE so that it can switch to different registers based on the value given to each control signal
+        
+        //WE
+        if(we){
+            //WA
+            case(wa){
+                d0: p1l_score.d = data
+                d1: p1r_score.d = data
+                d2: p2l_score.d = data
+                d3: p2r_score.d = data
+                d4: p1l_avail.d = data
+                d5: p1r_avail.d = data
+                d6: p2l_avail.d = data
+                d7: p2r_avail.d = data
+                d8: timer.d = data
+                d9: temp1.d = data
+                d10: temp2.d = data
+                d11: temp3.d = data
+                d12: temp4.d = data
+                d13: current_player.d = data
+                d14: timerLED_out.d = data
+            }
+        }
+        //RA1
+        case(ra1){
+                d0: rd1 = p1l_score.q
+                d1: rd1 = p1r_score.q
+                d2: rd1 = p2l_score.q
+                d3: rd1 = p2r_score.q
+                d4: rd1 = p1l_avail.q
+                d5: rd1 = p1r_avail.q
+                d6: rd1 = p2l_avail.q
+                d7: rd1 = p2r_avail.q
+                d8: rd1 = timer.q
+                d9: rd1 = temp1.q
+                d10: rd1 = temp2.q
+                d11: rd1 = temp3.q
+                d12: rd1 = temp4.q
+                d13: rd1 = current_player.q
+                d14: rd1 = timerLED_out.q
+            default: rd1 = 0
+        }
+        //RA2
+        case(ra2){
+                d0: rd2 = p1l_score.q
+                d1: rd2 = p1r_score.q
+                d2: rd2 = p2l_score.q
+                d3: rd2 = p2r_score.q
+                d4: rd2 = p1l_avail.q
+                d5: rd2 = p1r_avail.q
+                d6: rd2 = p2l_avail.q
+                d7: rd2 = p2r_avail.q
+                d8: rd2 = timer.q
+                d9: rd2 = temp1.q
+                d10: rd2 = temp2.q
+                d11: rd2 = temp3.q
+                d12: rd2 = temp4.q
+                d13: rd2 = current_player.q
+                d14: rd2 = timerLED_out.q
+            default: rd2 = 0
+        }
+        //output of REGFILE THAT WILL BE USED TO DISPLAY LEDS
+        p1l_score_out = p1l_score.q
+        p1r_score_out = p1r_score.q
+        p2l_score_out = p2l_score.q
+        p2r_score_out = p2r_score.q
+        p1l_avail_out = p1l_avail.q
+        p1r_avail_out = p1r_avail.q
+        p2l_avail_out = p2l_avail.q
+        p2r_avail_out = p2r_avail.q
+        timer_out = current_player.q
+        
+        
+    }
+}

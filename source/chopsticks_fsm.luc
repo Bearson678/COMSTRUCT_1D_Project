@@ -1,0 +1,1981 @@
+// barebones of a fsm, if you are doing timer stuff feel free to edit the increase a bit, Im not sure what i should add to make it work :(
+// This is the main file you will be editing for testing FSM modules
+module chopsticks_fsm (
+    input clk,  // clock
+    input rst,  // reset
+    input decrease_timer,
+    input regfile_rd2[32],
+    input p1l_button,
+    input p1r_button,
+    input p2r_button,
+    input p2l_button,
+    input p1split,
+    input p2split,
+    input rng,
+    
+    output alufn[6],
+    output asel[2],
+    output bsel[2],
+    output wdsel[2],
+    output regfile_wa[4],
+    output regfile_ra1[4],
+    output regfile_ra2[4],
+    output regfile_we,
+    output debug[4]
+) {
+    //use this to list the states you are testing for your module
+    enum ChopSticksStates{
+        START,
+        //IMPLEMENTING THE TIMER MODULE
+        OPTIONSELECT,
+        SELECTOPPHANDTOHIT, //IDLE STATE
+        
+        //once hand is selected and is that player's turn
+        OPP_BRANCHPLAYERONEP1L,
+        OPP_BRANCHPLAYERONEP1R,
+        OPP_BRANCHPLAYERTWOP2L,
+        OPP_BRANCHPLAYERTWOP2R,
+        OPP_UPDATETEMP1P1LADDR,
+        OPP_UPDATETEMP1P1RADDR,
+        OPP_UPDATETEMP1P2LADDR,
+        OPP_UPDATETEMP1P2RADDR,
+        OPP_UPDATETEMP2P1L,
+        OPP_UPDATETEMP2P1R,
+        OPP_UPDATETEMP2P2L,
+        OPP_UPDATETEMP2P2R,
+        
+        SEL_OWN_HANDTOHIT, //IDLE STATE
+        
+        //once player has selected the opponent hand to hit, they now can choose which of their hand they want to use
+        SEL_OWN_BRANCHPLAYERONEP1L,
+        SEL_OWN_BRANCHPLAYERONEP1R,
+        SEL_OWN_BRANCHPLAYERTWOP2L,
+        SEL_OWN_BRANCHPLAYERTWOP2R,
+        SEL_OWN_UPDATETEMP3P1L,
+        SEL_OWN_UPDATETEMP3P1R,
+        SEL_OWN_UPDATETEMP3P2L,
+        SEL_OWN_UPDATETEMP3P2R,
+        
+        
+        
+        ATCHECK_CHECKTEMP2, // check if there is a legal input for first option
+        ATCHECK_BRANCHTEMP4TOTEMP3, // branch legal/not legal
+        ATCHECK_BRANCHTEMP4TOLEGAL,
+        ATCHECK_CHECKTEMP3, // check if there is a legal input for second option
+        
+        // to be removed and connect to respective modules
+        ATCHECK_LEGAL,
+        ATCHECK_ILLEGAL,
+        
+        
+        
+        
+        
+        
+        ATK_CALC_RESULT,
+        
+        // player 1 left hand
+        ATK_CHECK_ATTACKEDHAND_P1L, // CHECK IF P1L WAS ATTACKED
+        ATK_BRANCH_P1L, // IDK, TO BRANCH if its P1L or not
+        ATK_P1L_5ORLESS, // CHECK IF HAND IS DEAD OR ALIVE, includes update in the else
+        ATK_REMOVE_P1LAVAIL, // IF DEAD
+        ATK_P1L_DEAD_OR_ALIVE,
+        
+        // player 1 right hand
+        ATK_CHECK_ATTACKEDHAND_P1R, // CHECK IF P1R WAS ATTACKED
+        ATK_BRANCH_P1R, // IDK, TO BRANCH if its P1R or not
+        ATK_P1R_5ORLESS, // CHECK IF HAND IS DEAD OR ALIVE, includes update in the else
+        ATK_REMOVE_P1RAVAIL, //  IF DEAD
+        ATK_P1R_DEAD_OR_ALIVE,
+        
+        // player 2 left hand
+        ATK_CHECK_ATTACKEDHAND_P2L, // CHECK IF P2L WAS ATTACKED
+        ATK_BRANCH_P2L, // IDK, TO BRANCH if its P2L or not
+        ATK_P2L_5ORLESS, // CHECK IF HAND IS DEAD OR ALIVE, includes update in the else
+        ATK_REMOVE_P2LAVAIL, //  IF DEAD
+        ATK_P2L_DEAD_OR_ALIVE,
+        
+        // player 2 right hand
+        //CHECK_ATTACKEDHAND_P2R, // CHECK IF P2R WAS ATTACKED, REMOVED TO FOLLOW THE FSM
+        //BRANCH_P2R, // IDK, TO BRANCH if its P2R or not,, changed to dead or alive
+        ATK_P2R_5ORLESS, // CHECK IF HAND IS DEAD OR ALIVE, includes update in the else
+        ATK_REMOVE_P2RAVAIL, //  IF DEAD
+        ATK_P2R_DEAD_OR_ALIVE,
+        
+        // checker 
+        BRANCHP1LAVAIL,
+        
+        ILL_PENALTYBRANCH,//attempting to combine 3 states into one
+        ILL_P1RPENALTY,
+        ILL_P2RPENALTY,
+        WINNER_BRANCHP1LAVAIL,
+        WINNER_BRANCHP1RAVAIL,
+        WINNER_BRANCHP2LAVAIL,
+        WINNER_BRANCHP2RAVAIL,
+        WINNER_BRANCHTEMP1,
+        WINNER_BRANCHTEMP2,
+        WINNER_LIGHTP1RHAND,
+        WINNER_LIGHTP2RHAND,
+        WINNER_OFFP1LHAND,
+        WINNER_OFFP1RHAND,
+        WINNER_OFFP2LHAND,
+        WINNER_OFFP2RHAND,
+        WINNER_OFFP1LAVAIL,
+        WINNER_OFFP1RAVAIL,
+        WINNER_OFFP2LAVAIL,
+        WINNER_OFFP2RAVAIL,
+        WINNER_ONP1LAVAIL,
+        WINNER_ONP1RAVAIL,
+        WINNER_ONP2LAVAIL,
+        WINNER_ONP2RAVAIL,
+        
+        RESET_TEMP4,
+        RESET_TEMP3,
+        RESET_TEMP2,
+        RESET_TEMP1,
+        
+        // change turn
+        RESET_TURNSELECT,
+        
+        
+        
+        OWN_SELECTHANDTOHIT, //IDLE STATE
+        
+        //once hand is selected and is that player's turn
+        OWN_BRANCHPLAYERONEP1L,
+        OWN_BRANCHPLAYERONEP1R,
+        OWN_BRANCHPLAYERTWOP2L,
+        OWN_BRANCHPLAYERTWOP2R,
+        OWN_UPDATETEMP1P1LADDR,
+        OWN_UPDATETEMP1P1RADDR,
+        OWN_UPDATETEMP1P2LADDR,
+        OWN_UPDATETEMP1P2RADDR,
+        OWN_UPDATETEMP2P1L,
+        OWN_UPDATETEMP2P1R,
+        OWN_UPDATETEMP2P2L,
+        OWN_UPDATETEMP2P2R,
+        OWN_UPDATETEMP3P1L,
+        OWN_UPDATETEMP3P1R,
+        OWN_UPDATETEMP3P2L,
+        OWN_UPDATETEMP3P2R,
+        
+        SPLIT_BRANCHPLAYER,
+        SPLIT_BRANCHP1LAVAIL,
+        SPLIT_BRANCHP2LAVAIL,
+        SPLIT_DIVP1RSCORE,
+        SPLIT_UPDATEP1LSCORE,
+        SPLIT_UPDATEP1LAVAIL,
+        SPLIT_DIVP1LSCORE,
+        SPLIT_UPDATEP1RSCORE,
+        SPLIT_UPDATEP1RAVAIL,
+        SPLIT_DIVP2RSCORE,
+        SPLIT_UPDATEP2LSCORE,
+        SPLIT_UPDATEP2LAVAIL,
+        SPLIT_DIVP2LSCORE,
+        SPLIT_UPDATEP2RSCORE,
+        SPLIT_UPDATEP2RAVAIL,
+        
+        
+        SPCHECK_BRANCHPLAYER,
+        // where the split module starts
+        
+        // player 1 turn
+        SPCHECK_BRANCHP1LAVAIL,
+        SPCHECK_EVALUATEHANDCOUNT1,
+        SPCHECK_UPDATET2P1LS,
+        SPCHECK_EVALUATEHANDCOUNT2,
+        
+        SPCHECK_BRANCHP1RAVAIL,
+        SPCHECK_EVALUATEHANDCOUNT3,
+        SPCHECK_UPDATET2P1RS,
+        
+        SPCHECK_BRANCHNOHANDS1,
+        SPCHECK_CHECKHANDSCORE1,
+        SPCHECK_BRANCHVALIDHANDS1,
+        
+        // player 2 turn
+        SPCHECK_BRANCHP2LAVAIL,
+        SPCHECK_EVALUATEHANDCOUNT4,
+        SPCHECK_UPDATET2P2LS,
+        SPCHECK_EVALUATEHANDCOUNT5,
+        
+        SPCHECK_BRANCHP2RAVAIL,
+        SPCHECK_EVALUATEHANDCOUNT6,
+        SPCHECK_UPDATET2P2RS,
+        
+        SPCHECK_BRANCHNOHANDS2,
+        SPCHECK_CHECKHANDSCORE2,
+        SPCHECK_BRANCHVALIDHANDS2,
+        
+        // to connect to next step
+        SPCHECK_P1SPLITVALID,
+        SPCHECK_P2SPLITVALID,
+        SPCHECK_INVALID        
+        
+
+        
+        
+        
+    
+    }
+    sig slowclock
+    
+    // stores the states in a dff
+    .clk(clk){
+        edge_detector slow_clock_edge(#RISE(1),#FALL(0))
+        .rst(rst){
+    dff game_fsm[$width(ChopSticksStates)](#INIT(ChopSticksStates.START))
+            dff slow_clock_enable(#INIT(0))
+        }
+    }
+    always {
+        //default control signal setings
+        slowclock = decrease_timer
+        alufn = 0
+        asel = 0
+        bsel = 0
+        wdsel = 0
+        regfile_wa = 0
+        regfile_we = 0
+        regfile_ra1 = d0
+        regfile_ra2 = d0
+        debug = regfile_rd2[3:0]
+        
+        slow_clock_edge.in = slowclock // Edge detector takes in the slow_clock signal at rising edge only
+        slow_clock_enable.d = slow_clock_enable.q
+        
+        case(slow_clock_enable.q){
+            0:
+            slow_clock_edge.in = 0 // always don't increment or decrement if "no edge signal"
+            1:
+            slow_clock_edge.in = slowclock // If "yes edge signal" , output wtv we have as the slow_clock signal
+            //default:
+            //slow_clock_edge.in = 0 // default the edge signal to 0 first
+        }
+        
+        game_fsm.d = game_fsm.q
+        if(rst){
+                    alufn = b011010
+                    asel = b10
+                    wdsel = 0
+                    regfile_wa = d8
+                    regfile_we = 1
+           
+            game_fsm.d = ChopSticksStates.START
+
+        }
+        else{
+   
+            //this is where you start coding out your states
+              case(game_fsm.q){
+                ChopSticksStates.START:
+                if(~slow_clock_enable.q){
+                   slow_clock_enable.d =1
+                if(rng){
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d13
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.OPTIONSELECT        
+                        }
+                else{
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d13
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.OPTIONSELECT        
+                        }   
+                    }
+                
+                
+                ChopSticksStates.OPTIONSELECT:
+                regfile_ra2 = d13
+                if((p1l_button && ~regfile_rd2[0]&&slow_clock_enable.q)|(p2l_button && regfile_rd2[0]&&slow_clock_enable.q)){
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d8
+                    regfile_we = 1
+
+                   game_fsm.d = ChopSticksStates.SELECTOPPHANDTOHIT
+                    }
+                else if((p1r_button && ~regfile_rd2[0]&&slow_clock_enable.q)|(p2r_button && regfile_rd2[0]&&slow_clock_enable.q)){
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d8
+                    regfile_we = 1
+                    //regfile_ra1 = d8
+                    //regfile_ra2 = d8
+                      
+                   game_fsm.d = ChopSticksStates.OWN_SELECTHANDTOHIT  
+                    }
+                    
+                else if((p1split && ~regfile_rd2[0]&&slow_clock_enable.q)|(p2split && regfile_rd2[0]&&slow_clock_enable.q)){
+
+                     game_fsm.d = ChopSticksStates.SPCHECK_BRANCHPLAYER
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.OPTIONSELECT    
+                    }
+               
+                ChopSticksStates.SELECTOPPHANDTOHIT:
+                if(p1l_button && ~p1r_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split ){//if p1l button
+                     game_fsm.d = ChopSticksStates.OPP_BRANCHPLAYERONEP1L                            
+                  }
+                else if(p1r_button&& ~p1l_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split){//if p1r button
+                     game_fsm.d = ChopSticksStates.OPP_BRANCHPLAYERONEP1R                            
+                  }
+                
+                else if(p2l_button && ~p1r_button && ~p1l_button && ~p2r_button && ~p1split && ~p2split){//if p2l button
+                       game_fsm.d = ChopSticksStates.OPP_BRANCHPLAYERTWOP2L
+                    }
+                else if(p2r_button && ~p1r_button && ~p2l_button && ~p1r_button && ~p1split && ~p2split){//if p2r button
+                       game_fsm.d = ChopSticksStates.OPP_BRANCHPLAYERTWOP2R
+                    }
+                    
+                    
+                else{
+                game_fsm.d = ChopSticksStates.SELECTOPPHANDTOHIT
+                    }
+                                       
+
+
+                //CHECKS IF IT IS THE CORRECT PLAYER
+                ChopSticksStates.OPP_BRANCHPLAYERONEP1L:
+                regfile_ra2 = d13
+                if(~regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.OPP_UPDATETEMP1P2RADDR   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.SELECTOPPHANDTOHIT    
+                    }
+                
+                ChopSticksStates.OPP_BRANCHPLAYERONEP1R:
+                regfile_ra2 = d13
+                if(~regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.OPP_UPDATETEMP1P2LADDR   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.SELECTOPPHANDTOHIT    
+                    }                
+                
+                ChopSticksStates.OPP_BRANCHPLAYERTWOP2L:
+                regfile_ra2 = d13
+                if(regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.OPP_UPDATETEMP1P1RADDR   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.SELECTOPPHANDTOHIT    
+                    }                
+                ChopSticksStates.OPP_BRANCHPLAYERTWOP2R:
+                regfile_ra2 = d13
+                if(regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.OPP_UPDATETEMP1P1LADDR   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.SELECTOPPHANDTOHIT    
+                    }
+                                
+                
+                //WHERE THE UPDATING OF TEMP REGS START
+                //IF P1L IS SELECTED
+                ChopSticksStates.OPP_UPDATETEMP1P1LADDR:
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0000                    
+              game_fsm.d = ChopSticksStates.OPP_UPDATETEMP2P1L
+                  
+               ChopSticksStates.OPP_UPDATETEMP2P1L:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    regfile_ra1 = d0
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT
+                
+                
+                
+                
+                //IF P1R IS SELECTED
+               ChopSticksStates.OPP_UPDATETEMP1P1RADDR:
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0000                    
+              game_fsm.d = ChopSticksStates.OPP_UPDATETEMP2P1R
+                  
+               ChopSticksStates.OPP_UPDATETEMP2P1R:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    regfile_ra1 = d1
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT
+                
+              
+               
+                
+                //IF P2L IS SELECTED
+                 
+               ChopSticksStates.OPP_UPDATETEMP1P2LADDR:
+                    alufn = b011100
+                    bsel = b11
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0000                    
+              game_fsm.d = ChopSticksStates.OPP_UPDATETEMP2P2L
+                  
+               ChopSticksStates.OPP_UPDATETEMP2P2L:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    regfile_ra1 = d2
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT
+                
+          
+                
+                
+                //IF P2R IS SELECTED 
+                
+                ChopSticksStates.OPP_UPDATETEMP1P2RADDR:
+                    alufn = b011010
+                    asel = b01
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0000                    
+              game_fsm.d = ChopSticksStates.OPP_UPDATETEMP2P2R
+                  
+               ChopSticksStates.OPP_UPDATETEMP2P2R:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    regfile_ra1 = d3
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT
+                
+
+                //............................................................................................................................................
+                ChopSticksStates.SEL_OWN_HANDTOHIT:
+                if(p1l_button && ~p1r_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split ){//if p1l button
+                     game_fsm.d = ChopSticksStates.SEL_OWN_BRANCHPLAYERONEP1L                            
+                  }
+                else if(p1r_button&& ~p1l_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split){//if p1r button
+                     game_fsm.d = ChopSticksStates.SEL_OWN_BRANCHPLAYERONEP1R                            
+                  }
+                
+                else if(p2l_button && ~p1r_button && ~p1l_button && ~p2r_button && ~p1split && ~p2split){//if p2l button
+                       game_fsm.d = ChopSticksStates.SEL_OWN_BRANCHPLAYERTWOP2L
+                    }
+                else if(p2r_button && ~p1r_button && ~p2l_button && ~p1r_button && ~p1split && ~p2split){//if p2r button
+                       game_fsm.d = ChopSticksStates.SEL_OWN_BRANCHPLAYERTWOP2R
+                    }
+
+                else{
+                game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT
+                    }
+                                       
+
+
+                //CHECKS IF IT IS THE CORRECT PLAYER
+                ChopSticksStates.SEL_OWN_BRANCHPLAYERONEP1L:
+                regfile_ra2 = d13
+                if(~regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.SEL_OWN_UPDATETEMP3P1L   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT   
+                    }
+                
+                ChopSticksStates.SEL_OWN_BRANCHPLAYERONEP1R:
+                regfile_ra2 = d13
+                if(~regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.SEL_OWN_UPDATETEMP3P1R   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT  
+                    }                
+                
+                ChopSticksStates.SEL_OWN_BRANCHPLAYERTWOP2L:
+                regfile_ra2 = d13
+                if(regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.SEL_OWN_UPDATETEMP3P2L   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT   
+                    }                
+                ChopSticksStates.SEL_OWN_BRANCHPLAYERTWOP2R:
+                regfile_ra2 = d13
+                if(regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.SEL_OWN_UPDATETEMP3P2R   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT   
+                    }
+                                
+                
+                //WHERE THE UPDATING OF TEMP REGS START
+                //IF P1L IS SELECTED
+               ChopSticksStates.SEL_OWN_UPDATETEMP3P1L:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d11 // write to temp 3
+                    regfile_we = 1
+                    regfile_ra1 = d0
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP2
+                
+                
+                //IF P1R IS SELECTED
+               ChopSticksStates.SEL_OWN_UPDATETEMP3P1R:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d11 // write to temp 3
+                    regfile_we = 1
+                    regfile_ra1 = d1
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP2
+               
+                
+                //IF P2L IS SELECTED
+                 ChopSticksStates.SEL_OWN_UPDATETEMP3P2L:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d11 // write to temp 3
+                    regfile_we = 1
+                    regfile_ra1 = d2
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP2
+                
+                
+                //IF P2R IS SELECTED 
+                ChopSticksStates.SEL_OWN_UPDATETEMP3P2R:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d11 // write to temp 3
+                    regfile_we = 1
+                    regfile_ra1 = d3
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP2
+                
+                
+                //...........................................................................................................................................
+                //...........................................................................................................................................
+                ChopSticksStates.OWN_SELECTHANDTOHIT:
+                if(p1l_button && ~p1r_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split ){//if p1l button
+                     game_fsm.d = ChopSticksStates.OWN_BRANCHPLAYERONEP1L                            
+                  }
+                else if(p1r_button&& ~p1l_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split){//if p1r button
+                     game_fsm.d = ChopSticksStates.OWN_BRANCHPLAYERONEP1R                            
+                  }
+                
+                else if(p2l_button && ~p1r_button && ~p1l_button && ~p2r_button && ~p1split && ~p2split){//if p2l button
+                       game_fsm.d = ChopSticksStates.OWN_BRANCHPLAYERTWOP2L
+                    }
+                else if(p2r_button && ~p1r_button && ~p2l_button && ~p1r_button && ~p1split && ~p2split){//if p2r button
+                       game_fsm.d = ChopSticksStates.OWN_BRANCHPLAYERTWOP2R
+                    }
+                else{
+                game_fsm.d = ChopSticksStates.OWN_SELECTHANDTOHIT
+                    }
+                                       
+
+
+                //CHECKS IF IT IS THE CORRECT PLAYER
+                ChopSticksStates.OWN_BRANCHPLAYERONEP1L:
+                regfile_ra2 = d13
+                if(~regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.OWN_UPDATETEMP1P1LADDR   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.OWN_SELECTHANDTOHIT    
+                    }
+                
+                ChopSticksStates.OWN_BRANCHPLAYERONEP1R:
+                regfile_ra2 = d13
+                if(~regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.OWN_UPDATETEMP1P1RADDR   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.OWN_SELECTHANDTOHIT   
+                    }                
+                
+                ChopSticksStates.OWN_BRANCHPLAYERTWOP2L:
+                regfile_ra2 = d13
+                if(regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.OWN_UPDATETEMP1P2LADDR   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.OWN_SELECTHANDTOHIT   
+                    }                
+                ChopSticksStates.OWN_BRANCHPLAYERTWOP2R:
+                regfile_ra2 = d13
+                if(regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.OWN_UPDATETEMP1P2RADDR   
+                    }
+
+                else{
+                    game_fsm.d = ChopSticksStates.OWN_SELECTHANDTOHIT   
+                    }
+                                
+                
+                //WHERE THE UPDATING OF TEMP REGS START
+                //IF P1L IS SELECTED
+                ChopSticksStates.OWN_UPDATETEMP1P1LADDR:
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0000                    
+              game_fsm.d = ChopSticksStates.OWN_UPDATETEMP2P1L
+                  
+               ChopSticksStates.OWN_UPDATETEMP2P1L:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    regfile_ra1 = d0
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.OWN_UPDATETEMP3P1R
+                
+              ChopSticksStates.OWN_UPDATETEMP3P1R:  
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d11
+                    regfile_we = 1
+                    regfile_ra1 = d1
+                    debug = b0000                         
+                game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP2
+                
+                
+                
+                //IF P1R IS SELECTED
+               ChopSticksStates.OWN_UPDATETEMP1P1RADDR:
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0000                    
+              game_fsm.d = ChopSticksStates.OWN_UPDATETEMP2P1R
+                  
+               ChopSticksStates.OWN_UPDATETEMP2P1R:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    regfile_ra1 = d1
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.OWN_UPDATETEMP3P1L
+                
+              ChopSticksStates.OWN_UPDATETEMP3P1L:  
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d11
+                    regfile_we = 1
+                    regfile_ra1 = d0
+                    debug = b0000                         
+                game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP2               
+               
+                
+                //IF P2L IS SELECTED
+                 
+               ChopSticksStates.OWN_UPDATETEMP1P2LADDR:
+                    alufn = b011100
+                    bsel = b11
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0000                    
+              game_fsm.d = ChopSticksStates.OWN_UPDATETEMP2P2L
+                  
+               ChopSticksStates.OWN_UPDATETEMP2P2L:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    regfile_ra1 = d2
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.OWN_UPDATETEMP3P2R
+                
+              ChopSticksStates.OWN_UPDATETEMP3P2R:  
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d11
+                    regfile_we = 1
+                    regfile_ra1 = d3
+                    debug = b0000                         
+                game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP2               
+                
+                
+                //IF P2R IS SELECTED 
+                
+                ChopSticksStates.OWN_UPDATETEMP1P2RADDR:
+                    alufn = b011010
+                    asel = b01
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0000                    
+              game_fsm.d = ChopSticksStates.OWN_UPDATETEMP2P2R
+                  
+               ChopSticksStates.OWN_UPDATETEMP2P2R:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    regfile_ra1 = d3
+                    debug = b0000 
+               game_fsm.d = ChopSticksStates.OWN_UPDATETEMP3P2L
+                
+              ChopSticksStates.OWN_UPDATETEMP3P2L:  
+                    alufn = b011010
+                    asel = b00
+                    wdsel = 0
+                    regfile_wa = d11
+                    regfile_we = 1
+                    regfile_ra1 = d2
+                    debug = b0000                         
+                game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP2               
+                
+                  //...........................................................................................................................................
+                 //...........................................................................................................................................
+                 //..........................................................................................................................................               
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                //...........................................................................................................................................
+                 //...........................................................................................................................................
+                 //...........................................................................................................................................
+
+
+                ChopSticksStates.SPLIT_BRANCHP1LAVAIL:
+                regfile_ra2 = d4 //checks R4 p1l avail
+                if (regfile_rd2[0]){
+                        game_fsm.d = ChopSticksStates.SPLIT_DIVP1LSCORE
+                    }
+                else{
+                        game_fsm.d = ChopSticksStates.SPLIT_DIVP1RSCORE
+                    }
+                
+                ChopSticksStates.SPLIT_BRANCHP2LAVAIL:
+                regfile_ra2 = d6 //checks R6 p2l avail
+                if (regfile_rd2[0]){
+                        game_fsm.d = ChopSticksStates.SPLIT_DIVP2LSCORE
+                    }
+                else{
+                        game_fsm.d = ChopSticksStates.SPLIT_DIVP2RSCORE
+                    }
+                ChopSticksStates.SPLIT_DIVP1RSCORE:
+                    alufn = b000011 //"DIV"
+                    asel = b00
+                    bsel = b11
+                    wdsel = b00
+                    regfile_wa = d1
+                    regfile_we = 1
+                    regfile_ra1 = d1
+                    debug = b0001                    
+                    game_fsm.d = ChopSticksStates.SPLIT_UPDATEP1LSCORE           
+                                
+                
+                ChopSticksStates.SPLIT_DIVP1LSCORE:
+                    alufn = b000011
+                    asel = b00
+                    bsel = b11
+                    wdsel = b00
+                    regfile_wa = d0
+                    regfile_we = 1
+                    regfile_ra1 = d0
+                    debug = b0001                    
+                    game_fsm.d = ChopSticksStates.SPLIT_UPDATEP1RSCORE                    
+                
+                ChopSticksStates.SPLIT_DIVP2LSCORE:
+                    alufn = b000011
+                    asel = b00
+                    bsel = b11
+                    wdsel = b00
+                    regfile_wa = d2
+                    regfile_we = 1
+                    regfile_ra1 = d2
+                    debug = b0001                    
+                    game_fsm.d = ChopSticksStates.SPLIT_UPDATEP2RSCORE                    
+                
+                
+                ChopSticksStates.SPLIT_DIVP2RSCORE:
+                    alufn = b000011
+                    asel = b00
+                    bsel = b11
+                    wdsel = b00
+                    regfile_wa = d3
+                    regfile_we = 1
+                    regfile_ra1 = d3
+                    debug = b0001                    
+                    game_fsm.d = ChopSticksStates.SPLIT_UPDATEP2LSCORE                    
+                
+                ChopSticksStates.SPLIT_UPDATEP1LSCORE:
+                    alufn = b011010 //"A"
+                    asel = b00
+                    wdsel = b00
+                    regfile_wa = d0
+                    regfile_we = 1
+                    regfile_ra1 = d1
+                    debug = b0010                        
+                    game_fsm.d = ChopSticksStates.SPLIT_UPDATEP1LAVAIL              
+                
+                ChopSticksStates.SPLIT_UPDATEP1RSCORE:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = b00
+                    regfile_wa = d1
+                    regfile_we = 1
+                    regfile_ra1 = d0
+                    debug = b0010                        
+                    game_fsm.d = ChopSticksStates.SPLIT_UPDATEP1RAVAIL     
+                
+                
+                ChopSticksStates.SPLIT_UPDATEP2LSCORE:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = b00
+                    regfile_wa = d2
+                    regfile_we = 1
+                    regfile_ra1 = d3
+                    debug = b0010                        
+                    game_fsm.d = ChopSticksStates.SPLIT_UPDATEP2LAVAIL                     
+                
+                
+                ChopSticksStates.SPLIT_UPDATEP2RSCORE:
+                    alufn = b011010
+                    asel = b00
+                    wdsel = b00
+                    regfile_wa = d3
+                    regfile_we = 1
+                    regfile_ra1 = d2
+                    debug = b0010                        
+                    game_fsm.d = ChopSticksStates.SPLIT_UPDATEP2RAVAIL                     
+                
+               ChopSticksStates.SPLIT_UPDATEP1LAVAIL:
+                    alufn = b011100 //"B"
+                    bsel = b10
+                    wdsel = b00
+                    regfile_wa = d4
+                    regfile_we = 1
+                    debug = b0011                        
+                    game_fsm.d = ChopSticksStates.RESET_TEMP4                             
+                
+               ChopSticksStates.SPLIT_UPDATEP1RAVAIL:
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = b00
+                    regfile_wa = d5
+                    regfile_we = 1
+                    debug = b0011                        
+                    game_fsm.d = ChopSticksStates.RESET_TEMP4                  
+                
+                ChopSticksStates.SPLIT_UPDATEP2LAVAIL:
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = b00
+                    regfile_wa = d6
+                    regfile_we = 1
+                    debug = b0011                        
+                    game_fsm.d = ChopSticksStates.RESET_TEMP4
+                
+                 ChopSticksStates.SPLIT_UPDATEP2RAVAIL:
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = b00
+                    regfile_wa = d7
+                    regfile_we = 1
+                    debug = b0011                        
+                    game_fsm.d = ChopSticksStates.RESET_TEMP4        
+                //...........................................................................................................................................
+                //...........................................................................................................................................
+                //...........................................................................................................................................
+                
+                ChopSticksStates.SPCHECK_BRANCHPLAYER:
+                    regfile_ra2 = d13 //checks R13 currplayer
+                    if(regfile_rd2[0]){
+                        game_fsm.d = ChopSticksStates.SPCHECK_BRANCHP2LAVAIL
+                    }
+                    else{
+                        game_fsm.d = ChopSticksStates.SPCHECK_BRANCHP1LAVAIL
+                    }
+                
+                // P1 turn
+                ChopSticksStates.SPCHECK_BRANCHP1LAVAIL: // check availability of P1 left hand
+                regfile_ra2 = d4
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT1
+                    }
+                else{
+                    game_fsm.d = ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT2
+                    }
+                
+                ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT1: // save that p1left exists
+                    // implement signals
+                    alufn = b011100 //"B"
+                    bsel = b10
+                    regfile_we = b1
+                    regfile_wa = b1001
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.SPCHECK_UPDATET2P1LS
+                
+                ChopSticksStates.SPCHECK_UPDATET2P1LS: // save number of fingers on p1left if the hand still has fingers
+                    alufn = b011010 //"A"
+                    asel = b00
+                    regfile_ra1 = b0000
+                    regfile_we = b1
+                    regfile_wa = b1010
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHP1RAVAIL
+                
+                ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT2: // save that no hands with fingers have been found yet
+                    // implement signals
+                    alufn = b011100 //"B"
+                    bsel = b01
+                    regfile_we = b1
+                    regfile_wa = b1001
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHP1RAVAIL
+                
+                ChopSticksStates.SPCHECK_BRANCHP1RAVAIL: // check availability of P1 Right hand
+                regfile_ra2 = d5
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT3
+                    }
+                else{
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHNOHANDS1
+                    } 
+                
+                ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT3: // save if there is more/less than 1 hand
+                    alufn = b010110 //"XOR" 
+                    asel = b00
+                    bsel = b10
+                    regfile_ra1 = b1001
+                    regfile_we = b1
+                    regfile_wa = b1001
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.SPCHECK_UPDATET2P1RS
+                
+                ChopSticksStates.SPCHECK_UPDATET2P1RS: // save number of fingers on p1right if the hand still has fingers
+                    alufn = b011010 //"A"
+                    asel = b00
+                    regfile_ra1 = b0001
+                    regfile_we = b1
+                    regfile_wa = b1010
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHNOHANDS1
+                
+                    
+                ChopSticksStates.SPCHECK_BRANCHNOHANDS1: // check if player has 1 hand
+                regfile_ra2 = d9
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.SPCHECK_CHECKHANDSCORE1
+                    }
+                else{
+                    game_fsm.d = ChopSticksStates.ILL_PENALTYBRANCH
+                    } 
+                
+                ChopSticksStates.SPCHECK_CHECKHANDSCORE1: // check if hand has less than or equal to 1 finger
+                    alufn = b110111 //"CMPLE"             
+                    asel = b00
+                    bsel = b10
+                    regfile_ra1 = b1010
+                    regfile_wa = b1010
+                    wdsel = b00
+                if(decrease_timer){
+                    regfile_we = b1
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHVALIDHANDS1
+                    }
+                
+                ChopSticksStates.SPCHECK_BRANCHVALIDHANDS1: // branch according to previous state
+                regfile_ra2 = d10
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.ILL_PENALTYBRANCH
+                    }
+                else{
+                    game_fsm.d = ChopSticksStates.SPLIT_BRANCHP1LAVAIL
+                    }
+                
+                // P2 turn
+                
+                ChopSticksStates.SPCHECK_BRANCHP2LAVAIL: // check availability of P2 left hand
+                regfile_ra2 = d6
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT4
+                    }
+                else{
+                    game_fsm.d = ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT5
+                    }
+                
+                ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT4: // save that p2left exists
+                    // implement signals
+                    alufn = b011100 //"B"
+                    bsel = b10
+                    regfile_we = b1
+                    regfile_wa = b1001
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.SPCHECK_UPDATET2P2LS
+                
+                ChopSticksStates.SPCHECK_UPDATET2P2LS: // save number of fingers on p2left if the hand still has fingers
+                    alufn = b011010 //"A"
+                    asel = b00
+                    regfile_ra1 = b0010
+                    regfile_we = b1
+                    regfile_wa = b1010
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHP2RAVAIL
+                
+                ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT5: // save that no hands with fingers have been found yet
+                    // implement signals
+                    alufn = b011100 //"B"
+                    bsel = b01
+                    regfile_we = b1
+                    regfile_wa = b1001
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHP2RAVAIL
+                
+                ChopSticksStates.SPCHECK_BRANCHP2RAVAIL: // check availability of P1 Right hand
+                regfile_ra2 = d7
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT6
+                    }
+                else{
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHNOHANDS2
+                    } 
+                
+                ChopSticksStates.SPCHECK_EVALUATEHANDCOUNT6: // indicate if there is more/less than 1 hand
+                    alufn = b010110 //"XOR" 
+                    asel = b00
+                    bsel = b10
+                    regfile_ra1 = b1001
+                    regfile_we = b1
+                    regfile_wa = b1001
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.SPCHECK_UPDATET2P2RS
+                
+                ChopSticksStates.SPCHECK_UPDATET2P2RS: // save number of fingers on p1right if the hand still has fingers
+                    alufn = b011010 //"A"
+                    asel = b00
+                    regfile_ra1 = b0011
+                    regfile_we = b1
+                    regfile_wa = b1010
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHNOHANDS2
+                
+                    
+                ChopSticksStates.SPCHECK_BRANCHNOHANDS2: // check if player has 1 hand
+                regfile_ra2 = d9
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.SPCHECK_CHECKHANDSCORE2
+                    }
+                else{
+                    game_fsm.d = ChopSticksStates.ILL_PENALTYBRANCH
+                    } 
+                
+                ChopSticksStates.SPCHECK_CHECKHANDSCORE2: // check if hand has less than or equal to 1 finger
+                    alufn = b110111 //"CMPLE"             
+                    asel = b00
+                    bsel = b10
+                    regfile_ra1 = b1010
+                    regfile_wa = b1010
+                    wdsel = b00
+                if(decrease_timer){
+                    regfile_we = b1
+                    game_fsm.d = ChopSticksStates.SPCHECK_BRANCHVALIDHANDS2
+                    }
+                
+                ChopSticksStates.SPCHECK_BRANCHVALIDHANDS2: // branch according to previous state
+                regfile_ra2 = d10
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.ILL_PENALTYBRANCH
+                    }
+                else{
+                    game_fsm.d = ChopSticksStates.SPLIT_BRANCHP2LAVAIL
+                    }
+                
+
+               
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                                
+                
+                //...........................................................................................................................................
+                //...........................................................................................................................................
+                //...........................................................................................................................................
+                
+                ChopSticksStates.ATCHECK_CHECKTEMP2: // check if there is a legal input for first option(temp2), store result in temp4
+               
+                    alufn = b110011 //CMPEQ
+                    asel = b00
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d12
+                    regfile_ra1 = d10
+                    debug = b0000
+                    
+                    if(slow_clock_edge.out){
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.ATCHECK_BRANCHTEMP4TOTEMP3
+                    }
+
+
+                  
+                                    
+                ChopSticksStates.ATCHECK_CHECKTEMP3: // check if there is a legal input for second option (temp3), store result in temp4     
+                    alufn = b110011 //CMPEQ
+                    asel = b00
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d12
+                    
+                    regfile_ra1 = d11
+                    debug = b0000
+                   
+                        if(slow_clock_edge.out){
+                        regfile_we = 1
+                        game_fsm.d = ChopSticksStates.ATCHECK_BRANCHTEMP4TOLEGAL
+                    }
+
+                
+                ChopSticksStates.ATCHECK_BRANCHTEMP4TOTEMP3://1st branch to check if temp2's content is legal or not
+                regfile_ra2 = d12
+                if(regfile_rd2[0]){
+                    game_fsm.d = ChopSticksStates.ILL_PENALTYBRANCH //if illegal   
+                    }
+                else{
+                   game_fsm.d = ChopSticksStates.ATCHECK_CHECKTEMP3//if legal
+                    }
+                      
+                ChopSticksStates.ATCHECK_BRANCHTEMP4TOLEGAL://2nd branch to check if temp3's content is legal or not
+                regfile_ra2 = d12
+                if(regfile_rd2[0]){
+                     game_fsm.d = ChopSticksStates.ILL_PENALTYBRANCH //if illegal 
+                    }
+                else{
+                   game_fsm.d = ChopSticksStates.ATK_CALC_RESULT//if legal
+                    }
+                   
+                // used for testing, to be removed and connect to respective states    
+                ChopSticksStates.ATCHECK_LEGAL: // assign temp1 to be 1 if legal
+                    alufn = b011100 //"B"
+                    bsel = b10 // 1
+                    regfile_we = 1
+                    regfile_wa = d12
+                    wdsel = b00
+
+                    game_fsm.d = ChopSticksStates.OPTIONSELECT
+                    
+                ChopSticksStates.ATCHECK_ILLEGAL: // assign temp1 to be 2 if illegal
+                    alufn = b011100 //"B"
+                    bsel = b11 // 2
+                    regfile_we = 1
+                    regfile_wa = d12
+                    wdsel = b00
+                    game_fsm.d = ChopSticksStates.OPTIONSELECT
+                
+                
+                
+                
+                
+                //............................................................................................................................................
+                ChopSticksStates.ATK_CALC_RESULT:
+                    alufn = b000000 // ADD
+                    asel = b00
+                    bsel = b00
+                    wdsel = 0
+                    regfile_we = 1
+                    regfile_wa = d10 // write to temp 2
+                    regfile_ra1 = d10 // what is in temp 2, shld be attacked hand
+                    regfile_ra2 = d11 // whatever is in temp 3, should be attacking hand
+                    debug = b0001
+                    game_fsm.d = ChopSticksStates.ATK_CHECK_ATTACKEDHAND_P1L
+                
+                
+                // CHECKING IF IS ATTACKED HAND IS PLAYER 1 LEFT 
+                
+                
+                
+                
+                
+                ChopSticksStates.ATK_CHECK_ATTACKEDHAND_P1L:
+                    alufn = b110011 // CMPEQ
+                    asel = b00
+                    bsel = b01 // provides a value of 0
+                    wdsel = 0
+                    
+                    regfile_wa = d12 // write to temp 4
+                    regfile_ra1 = d9  // whatever is in temp 1, which shld be address of the attacked hand
+                    //regfile_ra2 = d00 , dont need ra2 cuz bsel is not 0 
+                    debug = b0010
+                if(slow_clock_edge.out){
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.ATK_BRANCH_P1L
+                    }
+                
+                
+                ChopSticksStates.ATK_BRANCH_P1L:
+                    //if(slow_clock_edge.out){
+                    regfile_ra2 = d12 //checks R12 checks temp 4
+                    if(regfile_rd2[0]){ //  CHECKS IF TEMP 4 == 1, which means address in temp 4 is 0, P1L correct
+                        game_fsm.d = ChopSticksStates.ATK_P1L_DEAD_OR_ALIVE
+                    }
+                    else{ // if temp4==0, means address in temp4 is not 0, so we check other addresses 
+                        game_fsm.d = ChopSticksStates.ATK_CHECK_ATTACKEDHAND_P1R
+                    }
+                    //}
+                
+                
+                ChopSticksStates.ATK_P1L_DEAD_OR_ALIVE:
+                    // checking 5 <= hand value, returns 1 when hand >=5 (dead)
+                        alufn = b110111 // CMPLE, 
+                        asel = b10 // provides a value of 5
+                        bsel = b00 
+                        wdsel = 0
+                        
+                        regfile_wa = d12 // write to temp 4
+                        //regfile_ra1 = not needed
+                        regfile_ra2 = d10 // temp 2, should be result of attacked hand  
+                        debug = b0011
+                if(slow_clock_edge.out){
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.ATK_P1L_5ORLESS
+                    }
+                
+                
+                ChopSticksStates.ATK_P1L_5ORLESS:
+                    regfile_ra2 = d12 //checks temp4 
+                    if(regfile_rd2[0]){ //  if temp4==1, hand is dead
+                        // set P1L score to 0
+                        alufn = b011100 //  "B"
+                        //asel =  not needed
+                        bsel = b01 // provides a value of 0 at the bsel
+                        wdsel = 0
+                        regfile_we = 1
+                        regfile_wa = d0 // write to register 0
+                        //regfile_ra1 = not needed
+                        //regfile_ra2 = not needed  
+                        debug = b0001
+                        game_fsm.d = ChopSticksStates.ATK_REMOVE_P1LAVAIL
+                    }
+                    else{ // if temp4==0, hand is alive 
+                        // UPDATE P1L score to whatever is in temp 2
+                        alufn = b011010 // "A"
+                        asel = b00 
+                        bsel = b00 
+                        wdsel = 0
+                        regfile_we = 1
+                        regfile_wa = d0 // write to address reg 0, which is address of P1L content 
+                        regfile_ra1 = d10 // temp2, should contain the result of the attacked hand
+                        //regfile_ra2 not needed 
+                        debug = b0100
+                        game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL // goes to end game checker after updating hand
+                    }
+                
+                
+                ChopSticksStates.ATK_REMOVE_P1LAVAIL:
+                    // set P1LAVAIL to 0 
+                    alufn = b011100 // "B"
+                    bsel = b01 // provides a value of 0 
+                    wdsel = 0
+                    regfile_wa = d4 // write to register 4, dictates player 1 left availability to 0 
+                    regfile_we = 1
+                    debug = b1100
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL // goes to end game checker after updating avail
+                
+                
+                // CHECKING IF ATTACKED HAND IS PLAYER 1 right 
+                
+                
+                ChopSticksStates.ATK_CHECK_ATTACKEDHAND_P1R:
+                    // checks if the attacked hand has address of 1
+                    alufn = b110011 // CMPEQ
+                    asel = b00
+                    bsel = b10 // provides a value of 1
+                    wdsel = 0
+                    
+                    regfile_wa = d12 // write to temp 4
+                    regfile_ra1 = d09 // whatever is in temp 1, which shld be address of the attacked hand
+                    //regfile_ra2 = d00 , dont need ra2 cuz bsel is not 0 
+                    debug = b0101
+                if(slow_clock_edge.out){
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.ATK_BRANCH_P1R
+                    }
+                
+                
+                ChopSticksStates.ATK_BRANCH_P1R:
+                    //if(slow_clock_edge.out){
+                    regfile_ra2 = d12 //checks temp4
+                    if(regfile_rd2[0]){ //  CHECKS IF TEMP 4 == 1, which means address in temp 4 is 1, P1R correct
+                        game_fsm.d = ChopSticksStates.ATK_P1R_DEAD_OR_ALIVE
+                    }
+                    else{ // if temp4==0, means address in temp4 is not 1, so we check other addresses 
+                        game_fsm.d = ChopSticksStates.ATK_CHECK_ATTACKEDHAND_P2L
+                    }
+                    //}
+                
+                
+                ChopSticksStates.ATK_P1R_DEAD_OR_ALIVE:
+                    // checking 5 <= hand value, returns 1 when hand >=5 (dead)
+                        alufn = b110111 // CMPLE, 
+                        asel = b10 // provides a value of 5
+                        bsel = b00 
+                        wdsel = 0
+                        
+                        regfile_wa = d12 // write to temp 4
+                        //regfile_ra1 = not needed
+                        regfile_ra2 = d10 // temp 2, should be result of attacked hand  
+                        debug = b0011
+                if(slow_clock_edge.out){
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.ATK_P1R_5ORLESS
+                    }
+                
+                
+                ChopSticksStates.ATK_P1R_5ORLESS:
+                    regfile_ra2 = d12 //checks temp4 
+                    if(regfile_rd2[0]){ //  if temp4==1, hand is dead
+                        // set P1R score to 0
+                        alufn = b011100 //  "B"
+                        //asel =  not needed
+                        bsel = b01 // provides a value of 0 at the bsel
+                        wdsel = 0
+                        regfile_we = 1
+                        regfile_wa = d1 // write to register 1, for P1R
+                        //regfile_ra1 = not needed
+                        //regfile_ra2 = not needed  
+                        debug = b0000
+                        game_fsm.d = ChopSticksStates.ATK_REMOVE_P1RAVAIL
+                    }
+                    else{ // if temp4==0, hand is alive 
+                        // UPDATE P1R score to whatever is in temp 2
+                        alufn = b011010 // "A"
+                        asel = b00 
+                        bsel = b00 
+                        wdsel = 0
+                        regfile_we = 1
+                        regfile_wa = d1 // write to address reg 1, which is address of P1R content 
+                        regfile_ra1 = d10 // temp2, should contain the result of the attacked hand
+                        //regfile_ra2 not needed 
+                        debug = b1000
+                        game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL // goes to end game checker after updating hand
+                    }
+                
+                
+                ChopSticksStates.ATK_REMOVE_P1RAVAIL:
+                    // set P1RAVAIL to 0 
+                    alufn = b011100 // "B"
+                    bsel = b01 // provides a value of 0 
+                    wdsel = 0
+                    regfile_wa = d5 // write to register 5, dictates player 1 right availability to 0 
+                    regfile_we = 1
+                    debug = b1000
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL // goes to end game checker after updating avail
+                
+                
+                // CHECKING IF ATTACKED HAND IS PLAYER 2 LEFT 
+                
+                
+                ChopSticksStates.ATK_CHECK_ATTACKEDHAND_P2L:
+                    // checks if the attacked hand has address of 2
+                    alufn = b110011 // CMPEQ
+                    asel = b00
+                    bsel = b11 // provides a value of 2
+                    wdsel = 0
+                    
+                    regfile_wa = d12 // write to temp 4
+                    regfile_ra1 = d9 // whatever is in temp 1, which shld be address of the attacked hand
+                    //regfile_ra2 = d00 , dont need ra2 cuz bsel is not 0 
+                    debug = b1100
+                if(slow_clock_edge.out){
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.ATK_BRANCH_P2L
+                    }
+                
+                
+                ChopSticksStates.ATK_BRANCH_P2L:
+                //if(slow_clock_edge.out){
+                    regfile_ra2 = d12 //checks temp4
+                    if(regfile_rd2[0]){ //  CHECKS IF TEMP 4 == 2, which means address in temp 4 is 2, P2L correct
+                //debug = b1111
+                        game_fsm.d = ChopSticksStates.ATK_P2L_DEAD_OR_ALIVE
+                    }
+                    
+                    else{ // if temp4==0, means address in temp4 is not 1, so we check other addresses 
+                        game_fsm.d = ChopSticksStates.ATK_P2R_DEAD_OR_ALIVE 
+                    }
+                    //}
+                
+                
+                ChopSticksStates.ATK_P2L_DEAD_OR_ALIVE:
+                    // checking 5 <= hand value, returns 1 when hand >=5 (dead)
+                        alufn = b110111 // CMPLE, 
+                        asel = b10 // provides a value of 5
+                        bsel = b00 
+                        wdsel = 0
+                        
+                        regfile_wa = d12 // write to temp 4
+                        //regfile_ra1 = not needed
+                        regfile_ra2 = d10 // temp 2, should be result of attacked hand  
+                        debug = b0011
+                if(slow_clock_edge.out){
+                    regfile_we = 1
+                    game_fsm.d = ChopSticksStates.ATK_P2L_5ORLESS
+                    }
+                
+                
+                ChopSticksStates.ATK_P2L_5ORLESS:
+                    regfile_ra2 = d12 //checks temp4 
+                    if(regfile_rd2[0]){ //  if temp4==1, hand is dead
+                        // set P2L score to 0
+                        alufn = b011100 //  "B"
+                        //asel =  not needed
+                        bsel = b01 // provides a value of 0 at the bsel
+                        wdsel = 0
+                        regfile_we = 1
+                        regfile_wa = d2 // write to register 2, for P2L
+                        //regfile_ra1 = not needed
+                        //regfile_ra2 = not needed  
+                        debug = b1000
+                        game_fsm.d = ChopSticksStates.ATK_REMOVE_P2LAVAIL
+                    }
+                    else{ // if temp4==0, hand is alive 
+                        // UPDATE P2L score to whatever is in temp 2
+                        alufn = b011010 // "A"
+                        asel = b00 
+                        bsel = b00 
+                        wdsel = 0
+                        regfile_we = 1
+                        regfile_wa = d2 // write to address reg 2, which is address of P2L content 
+                        regfile_ra1 = d10 // temp2, should contain the result of the attacked hand
+                        //regfile_ra2 not needed 
+                        debug = b1000
+                        game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL // goes to end game checker after updating hand
+                    }
+                
+                
+                ChopSticksStates.ATK_REMOVE_P2LAVAIL:
+                    // set P2LAVAIL to 0 
+                    alufn = b011100 // "B"
+                    bsel = b01 // provides a value of 0 
+                    wdsel = 0
+                    regfile_wa = d6 // write to register 6, dictates player 2 Left availability to 0 
+                    regfile_we = 1
+                    debug = b1000
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL // goes to end game checker after updating avail
+                
+                
+                
+                // CHECKING IF ATTACKED HAND IS PLAYER 2 RIGHT 
+                
+                
+                ChopSticksStates.ATK_P2R_DEAD_OR_ALIVE:
+                    // checking 5 <= hand value, returns 1 when hand >=5 (dead)
+                        alufn = b110111 // CMPLE, 
+                        asel = b10 // provides a value of 5
+                        bsel = b00 
+                        wdsel = 0
+                        
+                        regfile_wa = d12 // write to temp 4
+                        //regfile_ra1 = not needed
+                        regfile_ra2 = d10 // temp 2, should be result of attacked hand  
+                        debug = b1000
+                if(slow_clock_edge.out){
+                    regfile_we = 1
+                        game_fsm.d = ChopSticksStates.ATK_P2R_5ORLESS
+                    }
+                
+                
+                ChopSticksStates.ATK_P2R_5ORLESS:
+                    regfile_ra2 = d12 //checks temp4 
+                    if(regfile_rd2[0]){ //  if temp4==1, hand is dead
+                        // set P2R score to 0
+                        alufn = b011100 //  "B"
+                        //asel =  not needed
+                        bsel = b01 // provides a value of 0 at the bsel
+                        wdsel = 0
+                        regfile_we = 1
+                        regfile_wa = d3 // write to register 2, for P2R
+                        //regfile_ra1 = not needed
+                        //regfile_ra2 = not needed  
+                        debug = b1000
+                        game_fsm.d = ChopSticksStates.ATK_REMOVE_P2RAVAIL
+                    }
+                    else{ // if temp4==0, hand is alive 
+                        // UPDATE P2R score to whatever is in temp 2
+                        alufn = b011010 // "A"
+                        asel = b00 
+                        bsel = b00 
+                        wdsel = 0
+                        regfile_we = 1
+                        regfile_wa = d3 // write to address reg 3, which is address of P2R content 
+                        regfile_ra1 = d10 // temp2, should contain the result of the attacked hand
+                        //regfile_ra2 not needed 
+                        debug = b1000
+                        game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL // goes to end game checker after updating hand
+                    }
+                
+                
+                ChopSticksStates.ATK_REMOVE_P2RAVAIL:
+                    // set P2RAVAIL to 0 
+                    alufn = b011100 // "B"
+                    bsel = b01 // provides a value of 0 
+                    wdsel = 0
+                    regfile_wa = d7 // write to register 7, dictates player 2 Right availability to 0 
+                    regfile_we = 1
+                    debug = b1000
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL // goes to end game checker after updating avail
+                
+                
+                
+                
+                // replace with seans end game checker one !!!!
+                ChopSticksStates.BRANCHP1LAVAIL: //just added for testing purposes
+                    // set temp4 to 0 so it stops looping 
+                    alufn = b011100 // "B"
+                    asel = b01 // provides a value of 1
+                    wdsel = 0
+                    regfile_wa = b1100 // write to register 12, dictates temp4 to 1
+                    regfile_we = 1                
+                debug = b1111
+                game_fsm.d = ChopSticksStates.OPTIONSELECT
+
+                
+                //...........................................................................................................................................
+                
+                ChopSticksStates.ILL_PENALTYBRANCH:
+                regfile_ra2 = d13
+                if(regfile_rd2[0]){ //if is player 2
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d6
+                    regfile_we = 1
+                    debug = b0001
+                    game_fsm.d = ChopSticksStates.ILL_P2RPENALTY                        
+                    }
+                else{//if is player 1
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d4
+                    regfile_we = 1
+                    debug = b0001
+                    game_fsm.d = ChopSticksStates.ILL_P1RPENALTY                         
+                    }
+                ChopSticksStates.ILL_P1RPENALTY:
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d5
+                    regfile_we = 1
+                    debug = b0010
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL 
+                                   
+                 ChopSticksStates.ILL_P2RPENALTY:
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d7
+                    regfile_we = 1
+                    debug = b0010
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP1LAVAIL
+                
+                
+                
+                //Checking who is alive??
+                ChopSticksStates.WINNER_BRANCHP1LAVAIL:                               
+                regfile_ra2 = d4
+                if(regfile_rd2[0]){ //if P1L is avail
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0011
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP1RAVAIL                  
+                    }
+                else{//if P1L not avail
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0011
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP1RAVAIL                       
+                    }
+                ChopSticksStates.WINNER_BRANCHP1RAVAIL:
+                 regfile_ra2 = d5
+                if(regfile_rd2[0]){ //if P1R is avail
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d9
+                    regfile_we = 1
+                    debug = b0100
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP2LAVAIL                  
+                    }
+                else{//if P1R not avail
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP2LAVAIL                       
+                    }
+                ChopSticksStates.WINNER_BRANCHP2LAVAIL:                   
+                 regfile_ra2 = d6
+                if(regfile_rd2[0]){ //if P2L is avail
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    debug = b0101
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP2RAVAIL                  
+                    }
+                else{//if P2L not avail
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    debug = b0101
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHP2RAVAIL                     
+                    }
+                ChopSticksStates.WINNER_BRANCHP2RAVAIL:
+                  regfile_ra2 = d7
+                if(regfile_rd2[0]){ //if P2R is avail
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d10
+                    regfile_we = 1
+                    debug = b0110
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHTEMP1                 
+                    }
+                else{//if P2R not avail
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHTEMP1                       
+                    }                                   
+                ChopSticksStates.WINNER_BRANCHTEMP1:
+                  regfile_ra2 = d9
+                if(regfile_rd2[0]){ //if P1 has at least 1 hand left
+                    game_fsm.d = ChopSticksStates.WINNER_BRANCHTEMP2                
+                    }
+                else{//if P1 has no hands left, light P2L left hand
+                    wdsel = 1
+                    regfile_wa = d2
+                    regfile_we = 1
+                    debug = b0111
+                    game_fsm.d = ChopSticksStates.WINNER_LIGHTP2RHAND                    
+                    }
+                ChopSticksStates.WINNER_LIGHTP2RHAND:
+                    wdsel = 1
+                    regfile_wa = d3
+                    regfile_we = 1
+                    debug = b1000
+                    game_fsm.d = ChopSticksStates.WINNER_OFFP1LHAND
+                
+                ChopSticksStates.WINNER_BRANCHTEMP2:
+                  regfile_ra2 = d10
+                if(regfile_rd2[0]){ //if P2 has at least 1 hand left
+                    game_fsm.d = ChopSticksStates.RESET_TEMP4             
+                    }
+                else{//if P2 has no hands left, light P1L left hand
+                    wdsel = 1
+                    regfile_wa = d0
+                    regfile_we = 1
+                    debug = b1001
+                    game_fsm.d = ChopSticksStates.WINNER_LIGHTP1RHAND                    
+                    }
+                ChopSticksStates.WINNER_LIGHTP1RHAND:
+                    wdsel = 1
+                    regfile_wa = d1
+                    regfile_we = 1
+                    debug = b1010
+                    game_fsm.d = ChopSticksStates.WINNER_OFFP2LHAND
+                
+                
+                //after lighting up the winner hand, off the loser hand
+                ChopSticksStates.WINNER_OFFP1LHAND:
+                    wdsel = 2
+                    regfile_wa = d0
+                    regfile_we = 1
+                    debug = b1011
+                game_fsm.d = ChopSticksStates.WINNER_OFFP1RHAND                   
+                
+                ChopSticksStates.WINNER_OFFP1RHAND:
+                    wdsel = 2
+                    regfile_wa = d1
+                    regfile_we = 1
+                    debug = b1011
+                game_fsm.d = ChopSticksStates.WINNER_OFFP1LAVAIL
+                
+                ChopSticksStates.WINNER_OFFP2LHAND:
+                    wdsel = 2
+                    regfile_wa = d2
+                    regfile_we = 1
+                    debug = b1011
+                game_fsm.d = ChopSticksStates.WINNER_OFFP2RHAND
+                
+                ChopSticksStates.WINNER_OFFP2RHAND:                                          
+                    wdsel = 2
+                    regfile_wa = d3
+                    regfile_we = 1
+                    debug = b1011
+                game_fsm.d = ChopSticksStates.WINNER_OFFP2LAVAIL  
+                
+                ChopSticksStates.WINNER_OFFP1LAVAIL:
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d4
+                    regfile_we = 1
+                    debug = b0001
+                game_fsm.d = ChopSticksStates.WINNER_OFFP1RAVAIL
+                                   
+                ChopSticksStates.WINNER_OFFP1RAVAIL:
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d5
+                    regfile_we = 1
+                    debug = b0001
+                game_fsm.d = ChopSticksStates.WINNER_ONP2LAVAIL                    
+                                                              
+                ChopSticksStates.WINNER_OFFP2LAVAIL:
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d6
+                    regfile_we = 1
+                    debug = b0001
+                game_fsm.d = ChopSticksStates.WINNER_OFFP2RAVAIL
+                                    
+                ChopSticksStates.WINNER_OFFP2RAVAIL:
+                    alufn = b011100
+                    bsel = b01
+                    wdsel = 0
+                    regfile_wa = d7
+                    regfile_we = 1
+                    debug = b0001
+                game_fsm.d = ChopSticksStates.WINNER_ONP1LAVAIL                      
+                    
+                ChopSticksStates.WINNER_ONP1LAVAIL:
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d4
+                    regfile_we = 1
+                    debug = b0001
+                game_fsm.d = ChopSticksStates.WINNER_ONP1RAVAIL                      
+                    
+                ChopSticksStates.WINNER_ONP1RAVAIL:
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d5
+                    regfile_we = 1
+                    debug = b0001
+                game_fsm.d = ChopSticksStates.OPTIONSELECT//TBR
+                                                                               
+                ChopSticksStates.WINNER_ONP2LAVAIL:
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d6
+                    regfile_we = 1
+                    debug = b0001
+                game_fsm.d = ChopSticksStates.WINNER_ONP2RAVAIL
+                  
+                ChopSticksStates.WINNER_ONP2RAVAIL:                     
+                    alufn = b011100
+                    bsel = b10
+                    wdsel = 0
+                    regfile_wa = d7
+                    regfile_we = 1
+                    debug = b0001
+                game_fsm.d = ChopSticksStates.OPTIONSELECT//TBR
+                                                                           
+               
+                
+                //...........................................................................................................................................
+                ChopSticksStates.RESET_TEMP4: // write 0 to temp4
+                    alufn = b011100 //"B"
+                    bsel = b01
+                    regfile_we = b1
+                    regfile_wa = b1100
+                    wdsel = b00
+                     game_fsm.d = ChopSticksStates.RESET_TEMP3
+                    
+                ChopSticksStates.RESET_TEMP3: // write 0 to temp3
+                    alufn = b011100 //"B"
+                    bsel = b01
+                    regfile_we = b1
+                    regfile_wa = b1011
+                    wdsel = b00
+                     game_fsm.d = ChopSticksStates.RESET_TEMP2
+                
+                ChopSticksStates.RESET_TEMP2: // write 0 to temp2
+                    alufn = b011100 //"B"
+                    bsel = b01
+                    regfile_we = b1
+                    regfile_wa = b1010
+                    wdsel = b00
+                     game_fsm.d = ChopSticksStates.RESET_TEMP1
+                    
+                ChopSticksStates.RESET_TEMP1: // write 0 to temp1
+                    alufn = b011100 //"B"
+                    bsel = b01
+                    regfile_we = b1
+                    regfile_wa = b1001
+                    wdsel = b00
+                     game_fsm.d = ChopSticksStates.RESET_TURNSELECT
+                
+                ChopSticksStates.RESET_TURNSELECT: // change player turn
+                    alufn = b010110 //"XOR" 
+                    asel = b00
+                    bsel = b10
+                    regfile_ra1 = b1101
+                    regfile_we = b1
+                    regfile_wa = b1101
+                    wdsel = b00
+                     game_fsm.d = ChopSticksStates.OPTIONSELECT                     
+                
+                                                
+            }
+        }
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

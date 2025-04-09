@@ -1,0 +1,637 @@
+
+*** Running vivado
+    with args -log alchitry_top.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source alchitry_top.tcl
+
+
+
+****** Vivado v2024.2 (64-bit)
+  **** SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
+  **** IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
+  **** SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
+  **** Start of session at: Wed Apr  9 23:07:10 2025
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source alchitry_top.tcl -notrace
+Command: synth_design -top alchitry_top -part xc7a35tftg256-1
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a35t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a35t'
+INFO: [Device 21-403] Loading part xc7a35tftg256-1
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 14572
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:07 . Memory (MB): peak = 947.621 ; gain = 464.828
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'alchitry_top' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alchitry_top.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'reset_conditioner' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/reset_conditioner.sv:7]
+	Parameter STAGES bound to: 3'b100 
+INFO: [Synth 8-6155] done synthesizing module 'reset_conditioner' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/reset_conditioner.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'edge_detector' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/edge_detector.sv:7]
+	Parameter RISE bound to: 1'b1 
+	Parameter FALL bound to: 1'b0 
+INFO: [Synth 8-6155] done synthesizing module 'edge_detector' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/edge_detector.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'button_conditioner' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/button_conditioner.sv:7]
+	Parameter CLK_FREQ bound to: 24'b100110001001011010000000 
+	Parameter MIN_DELAY bound to: 5'b10100 
+	Parameter NUM_SYNC bound to: 2'b10 
+INFO: [Synth 8-6157] synthesizing module 'pipeline' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/pipeline.sv:7]
+	Parameter DEPTH bound to: 2'b10 
+INFO: [Synth 8-6155] done synthesizing module 'pipeline' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/pipeline.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'button_conditioner' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/button_conditioner.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'chopsticks_datapath' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_datapath.sv:7]
+	Parameter SLOW_CLOCK_DIV bound to: 5'b10101 
+	Parameter CLOCK_DIVIDER bound to: 5'b11010 
+INFO: [Synth 8-6157] synthesizing module 'alu_expandedwithmuxes' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu_expandedwithmuxes.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'alu' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'adder' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/adder.sv:7]
+	Parameter SIZE bound to: 6'b100000 
+INFO: [Synth 8-6157] synthesizing module 'rca' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/rca.sv:7]
+	Parameter SIZE bound to: 6'b100000 
+INFO: [Synth 8-6157] synthesizing module 'fa' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/fa.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'fa' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/fa.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'rca' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/rca.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'adder' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/adder.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'compare' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/compare.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'compare' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/compare.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'boolean' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/boolean.sv:7]
+	Parameter SIZE bound to: 6'b100000 
+INFO: [Synth 8-6157] synthesizing module 'mux_4' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_4.sv:7]
+INFO: [Synth 8-226] default block is never used [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_4.sv:15]
+INFO: [Synth 8-6155] done synthesizing module 'mux_4' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_4.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'boolean' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/boolean.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'shifter' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/shifter.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftleft' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+	Parameter SHIFT bound to: 5'b10000 
+INFO: [Synth 8-6157] synthesizing module 'mux_2' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_2.sv:7]
+INFO: [Synth 8-226] default block is never used [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_2.sv:14]
+INFO: [Synth 8-6155] done synthesizing module 'mux_2' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_2.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftleft' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftleft__parameterized0' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+	Parameter SHIFT bound to: 5'b01000 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftleft__parameterized0' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftleft__parameterized1' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+	Parameter SHIFT bound to: 5'b00100 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftleft__parameterized1' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftleft__parameterized2' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+	Parameter SHIFT bound to: 5'b00010 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftleft__parameterized2' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftleft__parameterized3' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+	Parameter SHIFT bound to: 5'b00001 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftleft__parameterized3' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftright' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+	Parameter SHIFT bound to: 5'b10000 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftright' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftright__parameterized0' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+	Parameter SHIFT bound to: 5'b01000 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftright__parameterized0' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftright__parameterized1' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+	Parameter SHIFT bound to: 5'b00100 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftright__parameterized1' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftright__parameterized2' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+	Parameter SHIFT bound to: 5'b00010 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftright__parameterized2' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftright__parameterized3' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+	Parameter SHIFT bound to: 5'b00001 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftright__parameterized3' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftrightsigned' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+	Parameter SHIFT bound to: 5'b10000 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftrightsigned' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftrightsigned__parameterized0' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+	Parameter SHIFT bound to: 5'b01000 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftrightsigned__parameterized0' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftrightsigned__parameterized1' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+	Parameter SHIFT bound to: 5'b00100 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftrightsigned__parameterized1' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftrightsigned__parameterized2' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+	Parameter SHIFT bound to: 5'b00010 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftrightsigned__parameterized2' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'x_bitshiftrightsigned__parameterized3' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+	Parameter SHIFT bound to: 5'b00001 
+INFO: [Synth 8-6155] done synthesizing module 'x_bitshiftrightsigned__parameterized3' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'shifter' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/shifter.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'multiplier' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/multiplier.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'multiplier' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/multiplier.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'divider2' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/divider2.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'divider2' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/divider2.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'alu' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu.sv:7]
+INFO: [Synth 8-226] default block is never used [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu_expandedwithmuxes.sv:38]
+INFO: [Synth 8-226] default block is never used [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu_expandedwithmuxes.sv:56]
+INFO: [Synth 8-6155] done synthesizing module 'alu_expandedwithmuxes' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu_expandedwithmuxes.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'counter' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/counter.sv:7]
+	Parameter SIZE bound to: 1'b1 
+	Parameter DIV bound to: 5'b10101 
+	Parameter TOP bound to: 1'b0 
+	Parameter UP bound to: 1'b1 
+INFO: [Synth 8-6155] done synthesizing module 'counter' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/counter.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'counter__parameterized0' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/counter.sv:7]
+	Parameter SIZE bound to: 1'b1 
+	Parameter DIV bound to: 5'b11010 
+	Parameter TOP bound to: 1'b0 
+	Parameter UP bound to: 1'b1 
+INFO: [Synth 8-6155] done synthesizing module 'counter__parameterized0' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/counter.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'random_number_generator' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/random_number_generator.sv:7]
+	Parameter SIZE bound to: 4'b1000 
+INFO: [Synth 8-6157] synthesizing module 'pn_gen' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/pn_gen.sv:7]
+	Parameter SEED bound to: 33'b110010100001100001111010000011000 
+INFO: [Synth 8-6155] done synthesizing module 'pn_gen' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/pn_gen.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'edge_detector__parameterized0' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/edge_detector.sv:7]
+	Parameter RISE bound to: 1'b1 
+	Parameter FALL bound to: 1'b1 
+INFO: [Synth 8-6155] done synthesizing module 'edge_detector__parameterized0' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/edge_detector.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'random_number_generator' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/random_number_generator.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'chopsticks_fsm' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_fsm.sv:7]
+INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_fsm.sv:216]
+INFO: [Synth 8-6155] done synthesizing module 'chopsticks_fsm' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_fsm.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'game_regfiles' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/game_regfiles.sv:7]
+INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/game_regfiles.sv:61]
+INFO: [Synth 8-6155] done synthesizing module 'game_regfiles' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/game_regfiles.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'chopsticks_datapath' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_datapath.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'multi_seven_seg' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/multi_seven_seg.sv:7]
+	Parameter DIGITS bound to: 3'b100 
+	Parameter DIV bound to: 5'b10000 
+INFO: [Synth 8-6157] synthesizing module 'counter__parameterized1' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/counter.sv:7]
+	Parameter SIZE bound to: 2 - type: integer 
+	Parameter DIV bound to: 5'b10000 
+	Parameter TOP bound to: 3'b011 
+	Parameter UP bound to: 1'b1 
+INFO: [Synth 8-6155] done synthesizing module 'counter__parameterized1' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/counter.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'seven_seg' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/seven_seg.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'seven_seg' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/seven_seg.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'decoder' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/decoder.sv:7]
+	Parameter WIDTH bound to: 2 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'decoder' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/decoder.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'multi_seven_seg' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/multi_seven_seg.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'bin_to_dec' [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/bin_to_dec.sv:7]
+	Parameter DIGITS bound to: 3'b100 
+	Parameter LEADING_ZEROS bound to: 1'b0 
+INFO: [Synth 8-6155] done synthesizing module 'bin_to_dec' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/bin_to_dec.sv:7]
+INFO: [Synth 8-6155] done synthesizing module 'alchitry_top' (0#1) [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alchitry_top.sv:7]
+WARNING: [Synth 8-3917] design alchitry_top has port led[3] driven by constant 0
+WARNING: [Synth 8-3917] design alchitry_top has port led[2] driven by constant 0
+WARNING: [Synth 8-3917] design alchitry_top has port led[1] driven by constant 0
+WARNING: [Synth 8-7129] Port regfile_rd2[31] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[30] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[29] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[28] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[27] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[26] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[25] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[24] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[23] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[22] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[21] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[20] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[19] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[18] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[17] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[16] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[15] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[14] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[13] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[12] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[11] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[10] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[9] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[8] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[7] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[6] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[5] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[4] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[5] in module shifter is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[4] in module shifter is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[3] in module shifter is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[2] in module shifter is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[5] in module boolean is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[4] in module boolean is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[5] in module compare is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[4] in module compare is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[3] in module compare is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn[0] in module compare is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn_signal[5] in module adder is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn_signal[4] in module adder is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn_signal[3] in module adder is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn_signal[2] in module adder is either unconnected or has no load
+WARNING: [Synth 8-7129] Port alufn_signal[1] in module adder is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][7] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][6] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][5] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][4] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][3] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][2] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][1] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][0] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[1][7] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[1][6] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[1][5] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[1][4] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[1][3] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[1][2] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[1][1] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[1][0] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[0][7] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[0][6] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[0][5] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[0][4] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[0][3] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[0][2] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[0][1] in module alchitry_top is either unconnected or has no load
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:11 ; elapsed = 00:00:11 . Memory (MB): peak = 1088.352 ; gain = 605.559
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:11 ; elapsed = 00:00:11 . Memory (MB): peak = 1088.352 ; gain = 605.559
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:11 ; elapsed = 00:00:11 . Memory (MB): peak = 1088.352 ; gain = 605.559
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.068 . Memory (MB): peak = 1088.352 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/alchitry.xdc]
+Finished Parsing XDC File [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/alchitry.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/alchitry.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/alchitry_top_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/alchitry_top_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Parsing XDC File [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/au_props.xdc]
+Finished Parsing XDC File [C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/au_props.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 1180.102 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.023 . Memory (MB): peak = 1180.102 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:22 ; elapsed = 00:00:23 . Memory (MB): peak = 1180.102 ; gain = 697.309
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7a35tftg256-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:22 ; elapsed = 00:00:23 . Memory (MB): peak = 1180.102 ; gain = 697.309
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:22 ; elapsed = 00:00:23 . Memory (MB): peak = 1180.102 ; gain = 697.309
+---------------------------------------------------------------------------------
+INFO: [Synth 8-802] inferred FSM for state register 'D_game_fsm_q_reg' in module 'chopsticks_fsm'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                iSTATE51 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001 |                         00000000
+                iSTATE49 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010 |                         00000001
+                iSTATE45 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100 |                         00000010
+                iSTATE43 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000 |                         00000011
+                iSTATE89 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000 |                         00001010
+                iSTATE68 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000 |                         00001110
+                iSTATE30 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000 |                         00000100
+                iSTATE93 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000 |                         00001001
+                iSTATE75 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000 |                         00001101
+                iSTATE29 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000 |                         00000101
+                iSTATE95 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000 |                         00001000
+                iSTATE76 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000 |                         00001100
+                iSTATE27 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000 |                         00000110
+                iSTATE25 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000 |                         00000111
+                iSTATE87 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000 |                         00001011
+                iSTATE67 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000 |                         00001111
+                iSTATE99 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000 |                         00010000
+                iSTATE79 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000 |                         00010100
+                iSTATE97 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000 |                         00010001
+                iSTATE78 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000 |                         00010101
+                iSTATE92 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000 |                         00010010
+                iSTATE73 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000 |                         00010110
+                iSTATE91 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000 |                         00010011
+                iSTATE72 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000 |                         00010111
+                iSTATE35 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000 |                         01001110
+                iSTATE33 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000 |                         01001111
+                iSTATE59 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000 |                         01010011
+                iSTATE37 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000 |                         01010111
+                iSTATE90 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000 |                         01011100
+                iSTATE70 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000 |                         01010000
+                iSTATE47 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000 |                         01010100
+               iSTATE112 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000 |                         01011000
+               iSTATE107 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000 |                         01011011
+                iSTATE66 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000 |                         01010001
+                iSTATE44 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000 |                         01010101
+               iSTATE111 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000 |                         01011001
+                iSTATE85 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000 |                         01011110
+                iSTATE61 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000 |                         01010010
+                iSTATE39 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000 |                         01010110
+               iSTATE109 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000 |                         01011010
+                iSTATE88 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000 |                         01011101
+                iSTATE10 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000 |                         00011000
+                 iSTATE9 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000 |                         00011001
+                 iSTATE7 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000 |                         00011011
+                 iSTATE8 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000 |                         00011010
+               iSTATE114 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000 |                         00011110
+               iSTATE113 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000 |                         00011111
+               iSTATE110 | 0000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000 |                         00100000
+               iSTATE103 | 0000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000 |                         00100011
+               iSTATE108 | 0000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000 |                         00100001
+               iSTATE105 | 0000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000 |                         00100010
+                iSTATE86 | 0000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000 |                         00100100
+                iSTATE84 | 0000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000 |                         00100101
+                iSTATE24 | 0000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000 |                         00101000
+                iSTATE83 | 0000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000 |                         00100110
+                iSTATE82 | 0000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000 |                         00100111
+                iSTATE23 | 0000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000 |                         00101001
+                iSTATE16 | 0000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000 |                         00101010
+                 iSTATE3 | 0000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000 |                         00101101
+                iSTATE15 | 0000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000 |                         00101011
+                 iSTATE4 | 0000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000 |                         00101100
+                iSTATE28 | 0000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000 |                         00110000
+               iSTATE128 | 0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000 |                         00101110
+               iSTATE126 | 0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000 |                         00101111
+                iSTATE96 | 0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000 |                         01101110
+                iSTATE34 | 0000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000 |                         01111001
+                iSTATE32 | 0000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000 |                         01111010
+                iSTATE31 | 0000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000 |                         01111011
+                iSTATE18 | 0000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000 |                         01111100
+                iSTATE17 | 0000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000 |                         01111101
+                iSTATE12 | 0000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000 |                         01111110
+                iSTATE11 | 0000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000 |                         01111111
+                iSTATE60 | 0000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000 |                         10000000
+                iSTATE58 | 0000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000 |                         10000001
+                iSTATE54 | 0000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000 |                         10000010
+                iSTATE80 | 0000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01100001
+               iSTATE115 | 0000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01101011
+               iSTATE102 | 0000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01101100
+               iSTATE101 | 0000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01101101
+               iSTATE123 | 0000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01101000
+               iSTATE121 | 0000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01101001
+               iSTATE116 | 0000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01101010
+                iSTATE94 | 0000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01101111
+               iSTATE127 | 0000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01110000
+               iSTATE124 | 0000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01110001
+               iSTATE120 | 0000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01110010
+               iSTATE118 | 0000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01110011
+               iSTATE106 | 0000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01110100
+               iSTATE104 | 0000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01110101
+               iSTATE100 | 0000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01110110
+                iSTATE98 | 0000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01110111
+                iSTATE36 | 0000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01111000
+                iSTATE81 | 0000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01100000
+                iSTATE53 | 0000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01100101
+                iSTATE52 | 0000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01100110
+                iSTATE50 | 0000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01100111
+                iSTATE77 | 0000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01100010
+                iSTATE74 | 0000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01100011
+                iSTATE55 | 0000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01100100
+                iSTATE21 | 0000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00110010
+                 iSTATE6 | 0000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00110100
+                iSTATE19 | 0000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00110011
+                 iSTATE5 | 0000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00110101
+                 iSTATE1 | 0000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00110110
+                  iSTATE | 0000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00110111
+                iSTATE71 | 0000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00111000
+                iSTATE69 | 0000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00111001
+                iSTATE63 | 0000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00111010
+                iSTATE64 | 0000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01001001
+                iSTATE57 | 0000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01001010
+                iSTATE56 | 0000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01001011
+                iSTATE42 | 0000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01001100
+                iSTATE40 | 0000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01001101
+                iSTATE62 | 0000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00111011
+                iSTATE38 | 0000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00111111
+                iSTATE22 | 0000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01000000
+                iSTATE13 | 0000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01000011
+                 iSTATE2 | 0000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01000100
+                 iSTATE0 | 0000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01000101
+               iSTATE125 | 0000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01000110
+                iSTATE48 | 0000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00111100
+                iSTATE46 | 0000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00111101
+                iSTATE41 | 0000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         00111110
+                iSTATE20 | 0001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01000001
+                iSTATE14 | 0010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01000010
+               iSTATE122 | 0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01000111
+                iSTATE65 | 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 |                         01001000
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'D_game_fsm_q_reg' using encoding 'one-hot' in module 'chopsticks_fsm'
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:26 ; elapsed = 00:00:28 . Memory (MB): peak = 1180.102 ; gain = 697.309
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   3 Input   14 Bit       Adders := 3     
++---XORs : 
+	   2 Input     32 Bit         XORs := 3     
+	   4 Input     32 Bit         XORs := 1     
+	   3 Input      1 Bit         XORs := 528   
+	   2 Input      1 Bit         XORs := 1     
++---Registers : 
+	               32 Bit    Registers := 19    
+	                4 Bit    Registers := 1     
+	                2 Bit    Registers := 5     
+	                1 Bit    Registers := 9     
++---Muxes : 
+	 178 Input  127 Bit        Muxes := 1     
+	   4 Input   32 Bit        Muxes := 3     
+	   3 Input   32 Bit        Muxes := 1     
+	   2 Input   32 Bit        Muxes := 1     
+	   2 Input   14 Bit        Muxes := 3     
+	 127 Input    6 Bit        Muxes := 1     
+	   2 Input    6 Bit        Muxes := 1     
+	   2 Input    5 Bit        Muxes := 2     
+	   3 Input    5 Bit        Muxes := 1     
+	   2 Input    4 Bit        Muxes := 13    
+	   3 Input    4 Bit        Muxes := 1     
+	 127 Input    4 Bit        Muxes := 4     
+	   4 Input    4 Bit        Muxes := 1     
+	   2 Input    3 Bit        Muxes := 1     
+	   2 Input    2 Bit        Muxes := 5     
+	   3 Input    2 Bit        Muxes := 1     
+	 127 Input    2 Bit        Muxes := 3     
+	   4 Input    1 Bit        Muxes := 33    
+	   2 Input    1 Bit        Muxes := 485   
+	 127 Input    1 Bit        Muxes := 3     
+	  16 Input    1 Bit        Muxes := 15    
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 90 (col length:60)
+BRAMs: 100 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7080] Parallel synthesis criteria is not met
+WARNING: [Synth 8-3917] design alchitry_top has port led[3] driven by constant 0
+WARNING: [Synth 8-3917] design alchitry_top has port led[2] driven by constant 0
+WARNING: [Synth 8-3917] design alchitry_top has port led[1] driven by constant 0
+WARNING: [Synth 8-3917] design alchitry_top has port io_segment[7] driven by constant 1
+WARNING: [Synth 8-7129] Port regfile_rd2[31] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[30] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[29] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[28] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[27] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[26] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[25] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[24] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[23] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[22] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[21] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[20] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[19] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[18] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[17] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[16] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[15] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[14] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[13] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[12] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[11] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[10] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[9] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[8] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[7] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[6] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[5] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port regfile_rd2[4] in module chopsticks_fsm is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][7] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][6] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][5] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][4] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][3] in module alchitry_top is either unconnected or has no load
+WARNING: [Synth 8-7129] Port io_dip[2][2] in module alchitry_top is either unconnected or has no load
+INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:18 ; elapsed = 00:01:21 . Memory (MB): peak = 1330.367 ; gain = 847.574
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:25 ; elapsed = 00:01:28 . Memory (MB): peak = 1330.367 ; gain = 847.574
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:02:03 ; elapsed = 00:02:06 . Memory (MB): peak = 1667.895 ; gain = 1185.102
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:02:07 ; elapsed = 00:02:11 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:02:12 ; elapsed = 00:02:15 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:02:12 ; elapsed = 00:02:15 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:12 ; elapsed = 00:02:16 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:02:12 ; elapsed = 00:02:16 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:02:12 ; elapsed = 00:02:16 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:02:12 ; elapsed = 00:02:16 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++-+--------------+----------+
+| |BlackBox name |Instances |
++-+--------------+----------+
++-+--------------+----------+
+
+Report Cell Usage: 
++------+-------+------+
+|      |Cell   |Count |
++------+-------+------+
+|1     |BUFG   |     1|
+|2     |CARRY4 |    46|
+|3     |LUT1   |    20|
+|4     |LUT2   |   536|
+|5     |LUT3   |   160|
+|6     |LUT4   |   201|
+|7     |LUT5   |   347|
+|8     |LUT6   |  1391|
+|9     |MUXF7  |    37|
+|10    |FDPE   |     4|
+|11    |FDRE   |   905|
+|12    |FDSE   |    18|
+|13    |IBUF   |     9|
+|14    |OBUF   |    45|
++------+-------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:02:12 ; elapsed = 00:02:16 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 56 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:01:59 ; elapsed = 00:02:13 . Memory (MB): peak = 1672.969 ; gain = 1098.426
+Synthesis Optimization Complete : Time (s): cpu = 00:02:13 ; elapsed = 00:02:16 . Memory (MB): peak = 1672.969 ; gain = 1190.176
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.038 . Memory (MB): peak = 1679.582 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 83 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1681.633 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete | Checksum: bd170cb0
+INFO: [Common 17-83] Releasing license: Synthesis
+114 Infos, 108 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:02:18 ; elapsed = 00:02:26 . Memory (MB): peak = 1681.633 ; gain = 1395.891
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.011 . Memory (MB): peak = 1681.633 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.runs/synth_1/alchitry_top.dcp' has been generated.
+INFO: [Vivado 12-24828] Executing command : report_utilization -file alchitry_top_utilization_synth.rpt -pb alchitry_top_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Wed Apr  9 23:09:40 2025...
