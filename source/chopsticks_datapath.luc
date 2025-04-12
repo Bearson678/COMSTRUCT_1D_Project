@@ -26,7 +26,8 @@ module chopsticks_datapath #(
     output debugging[4],
     output slow_clock_out[4],
     output curr_player[32],
-    output change_mode
+    output change_mode,
+    output start_mode
 ) {
 
     alu_expandedwithmuxes game_alu
@@ -83,6 +84,7 @@ module chopsticks_datapath #(
         // connecting the regfile RD2 to the FSM
         chopsticks_fsm.regfile_rd2 = game_regfiles.rd2
         change_mode = chopsticks_fsm.difficulty
+        start_mode = chopsticks_fsm.start_led
         
         
         //connecting the regfile and fsm outputs to the ALU section

@@ -30,7 +30,8 @@ module chopsticks_datapath #(
         output reg [3:0] debugging,
         output reg [3:0] slow_clock_out,
         output reg [31:0] curr_player,
-        output reg change_mode
+        output reg change_mode,
+        output reg start_mode
     );
     logic [31:0] M_game_alu_rd1;
     logic [31:0] M_game_alu_rd2;
@@ -51,17 +52,17 @@ module chopsticks_datapath #(
     );
     
     
-    localparam _MP_SIZE_1172572368 = 1'h1;
-    localparam _MP_DIV_1172572368 = SLOW_CLOCK_DIV;
-    localparam _MP_TOP_1172572368 = 1'h0;
-    localparam _MP_UP_1172572368 = 1'h1;
+    localparam _MP_SIZE_1185003075 = 1'h1;
+    localparam _MP_DIV_1185003075 = SLOW_CLOCK_DIV;
+    localparam _MP_TOP_1185003075 = 1'h0;
+    localparam _MP_UP_1185003075 = 1'h1;
     logic [0:0] M_slow_clock_value;
     
     counter #(
-        .SIZE(_MP_SIZE_1172572368),
-        .DIV(_MP_DIV_1172572368),
-        .TOP(_MP_TOP_1172572368),
-        .UP(_MP_UP_1172572368)
+        .SIZE(_MP_SIZE_1185003075),
+        .DIV(_MP_DIV_1185003075),
+        .TOP(_MP_TOP_1185003075),
+        .UP(_MP_UP_1185003075)
     ) slow_clock (
         .rst(rst),
         .clk(clk),
@@ -69,17 +70,17 @@ module chopsticks_datapath #(
     );
     
     
-    localparam _MP_SIZE_1828087953 = 1'h1;
-    localparam _MP_DIV_1828087953 = CLOCK_DIVIDER;
-    localparam _MP_TOP_1828087953 = 1'h0;
-    localparam _MP_UP_1828087953 = 1'h1;
+    localparam _MP_SIZE_1617514193 = 1'h1;
+    localparam _MP_DIV_1617514193 = CLOCK_DIVIDER;
+    localparam _MP_TOP_1617514193 = 1'h0;
+    localparam _MP_UP_1617514193 = 1'h1;
     logic [0:0] M_rnger_value;
     
     counter #(
-        .SIZE(_MP_SIZE_1828087953),
-        .DIV(_MP_DIV_1828087953),
-        .TOP(_MP_TOP_1828087953),
-        .UP(_MP_UP_1828087953)
+        .SIZE(_MP_SIZE_1617514193),
+        .DIV(_MP_DIV_1617514193),
+        .TOP(_MP_TOP_1617514193),
+        .UP(_MP_UP_1617514193)
     ) rnger (
         .rst(rst),
         .clk(clk),
@@ -87,11 +88,11 @@ module chopsticks_datapath #(
     );
     
     
-    localparam _MP_SIZE_1078905115 = 4'h8;
+    localparam _MP_SIZE_871968215 = 4'h8;
     logic [7:0] M_generator_out;
     
     random_number_generator #(
-        .SIZE(_MP_SIZE_1078905115)
+        .SIZE(_MP_SIZE_871968215)
     ) generator (
         .slow_clk(M_rnger_value),
         .refresh(rst),
@@ -100,13 +101,13 @@ module chopsticks_datapath #(
     );
     
     
-    localparam _MP_RISE_535091892 = 1'h1;
-    localparam _MP_FALL_535091892 = 1'h0;
+    localparam _MP_RISE_1941748781 = 1'h1;
+    localparam _MP_FALL_1941748781 = 1'h0;
     logic M_edge_detector_slow_clk_edge_out;
     
     edge_detector #(
-        .RISE(_MP_RISE_535091892),
-        .FALL(_MP_FALL_535091892)
+        .RISE(_MP_RISE_1941748781),
+        .FALL(_MP_FALL_1941748781)
     ) edge_detector_slow_clk_edge (
         .in(M_slow_clock_value),
         .clk(clk),
@@ -126,6 +127,7 @@ module chopsticks_datapath #(
     logic [3:0] M_chopsticks_fsm_debug;
     logic M_chopsticks_fsm_difficulty;
     logic M_chopsticks_fsm_pulse;
+    logic M_chopsticks_fsm_start_led;
     
     chopsticks_fsm chopsticks_fsm (
         .p1l_button(p1l_button),
@@ -151,7 +153,8 @@ module chopsticks_datapath #(
         .regfile_we(M_chopsticks_fsm_regfile_we),
         .debug(M_chopsticks_fsm_debug),
         .difficulty(M_chopsticks_fsm_difficulty),
-        .pulse(M_chopsticks_fsm_pulse)
+        .pulse(M_chopsticks_fsm_pulse),
+        .start_led(M_chopsticks_fsm_start_led)
     );
     
     
@@ -230,6 +233,7 @@ module chopsticks_datapath #(
         D_black_d = D_black_q + M_black_out_out;
         M_chopsticks_fsm_regfile_rd2 = M_game_regfiles_rd2;
         change_mode = M_chopsticks_fsm_difficulty;
+        start_mode = M_chopsticks_fsm_start_led;
         M_game_alu_rd1 = M_game_regfiles_rd1;
         M_game_alu_rd2 = M_game_regfiles_rd2;
         M_game_alu_asel = M_chopsticks_fsm_asel;

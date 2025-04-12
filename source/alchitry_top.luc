@@ -29,12 +29,18 @@ module alchitry_top (
         edge_detector p2l_button_edge_detector(#RISE(1),#FALL(0))
         edge_detector p2r_button_edge_detector(#RISE(1),#FALL(0))
         edge_detector p1split_button_edge_detector(#RISE(1),#FALL(0))
+        edge_detector p2split_button_edge_detector(#RISE(1),#FALL(0))
+        edge_detector blackout_button_edge_detector(#RISE(1),#FALL(0))
+        edge_detector start_button_edge_detector(#RISE(1),#FALL(0))
         
         button_conditioner p1l_button_cond(#CLK_FREQ(CLK_FREQ))
         button_conditioner p1r_button_cond(#CLK_FREQ(CLK_FREQ))
         button_conditioner p2l_button_cond(#CLK_FREQ(CLK_FREQ))
         button_conditioner p2r_button_cond(#CLK_FREQ(CLK_FREQ))
         button_conditioner p1split_button_cond(#CLK_FREQ(CLK_FREQ))
+        button_conditioner p2split_button_cond(#CLK_FREQ(CLK_FREQ))
+        button_conditioner blackout_button_cond(#CLK_FREQ(CLK_FREQ))
+        button_conditioner start_button_cond(#CLK_FREQ(CLK_FREQ))
         
         
         
@@ -47,7 +53,7 @@ module alchitry_top (
     bin_to_dec bin_to_dec_converter(#DIGITS(4))
     always{
         //Default FPGA settings
-        reset_cond.in = ~rst_n
+        reset_cond.in = io_dip[2][7]
         rst = reset_cond.out 
         usb_tx = usb_rx
         led = 8h00             // turn LEDs off
@@ -61,6 +67,10 @@ module alchitry_top (
         p2l_button_cond.in = io_button[2]
         p2r_button_cond.in = io_button[3]
         p1split_button_cond.in = io_button[4]
+        p2split_button_cond.in = io_dip[0][0]
+        blackout_button_cond.in = io_dip[1][0]
+        start_button_cond.in = io_dip[2][0]
+        
         
         //mapping the button conditioning output to the edge detector
         p1l_button_edge_detector.in = p1l_button_cond.out
@@ -68,6 +78,9 @@ module alchitry_top (
         p2l_button_edge_detector.in = p2l_button_cond.out
         p2r_button_edge_detector.in = p2r_button_cond.out
         p1split_button_edge_detector.in = p1split_button_cond.out
+        p2split_button_edge_detector.in = p2split_button_cond.out
+        blackout_button_edge_detector.in = blackout_button_cond.out
+        start_button_edge_detector.in = start_button_cond.out
         
         //mapping datapath's button input to the edge_detector output
         //also map the p2split button input to the io_dip[0][0]
@@ -76,10 +89,10 @@ module alchitry_top (
         cd.p2l_button = p2l_button_edge_detector.out
         cd.p2r_button = p2r_button_edge_detector.out
         cd.p1split = p1split_button_edge_detector.out
-        cd.p2split = io_dip[0][0]
-        cd.blackoutbutton = io_dip[1][0]
-        cd.start = io_dip[2][0]
-        rst = io_dip[2][7]
+        cd.p2split = p2split_button_edge_detector.out
+        cd.blackoutbutton =  blackout_button_edge_detector.out
+        cd.start = start_button_edge_detector.out
+        //rst = io_dip[2][7]
         
         //map datapath output to leds
         //second to pinky fingers
@@ -99,14 +112,15 @@ module alchitry_top (
         io_led[0][0] = cd.p2r_score_out[4]
         //misc
         led[7:4] = cd.debugging
-        led[2:0] = cd.slow_clock_out[2:0]
+        led[1:0] = cd.slow_clock_out[1:0]
+        led[2] = cd.start_mode
         led[3] = cd.change_mode
         
         
         
         //update 7segments
         seg.values = 4x{{4b0}} // default to all 0 first
-        bin_to_dec_converter.value = cd.timer_led_out[3:0]
+        bin_to_dec_converter.value = cd.curr_player[3:0]
         seg.values = bin_to_dec_converter.digits
         io_segment = ~seg.seg
         io_select = ~seg.sel

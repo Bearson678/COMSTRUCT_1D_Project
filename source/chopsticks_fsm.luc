@@ -26,7 +26,8 @@ module chopsticks_fsm (
     output regfile_we,
     output debug[4],
     output difficulty,
-    output pulse
+    output pulse,
+    output start_led
 ) {
     //use this to list the states you are testing for your module
     enum ChopSticksStates{
@@ -224,7 +225,6 @@ module chopsticks_fsm (
     
     }
     sig slowclock
-
     //sig tempsig
     // stores the states in a dff
     .clk(clk){
@@ -234,12 +234,15 @@ module chopsticks_fsm (
             dff slow_clock_enable(#INIT(0))
             dff diff(#INIT(0))
             dff pulse_sig(#INIT(0))
+            dff start_sig(#INIT(1))
         }
     }
    
     always {
         //default control signal setings
         //tempsig = rng
+        
+        start_sig.d = start_sig.q
         diff.d = diff.q
         pulse_sig.d = pulse_sig.q
         slowclock = slowclk
@@ -254,6 +257,7 @@ module chopsticks_fsm (
         debug = regfile_rd2[3:0]
         difficulty = diff.q
         pulse = pulse_sig.q
+        start_led = start_sig.q
         
         slow_clock_edge.in = slowclock // Edge detector takes in the slow_clock signal at rising edge only
         slow_clock_enable.d = slow_clock_enable.q
@@ -283,15 +287,16 @@ module chopsticks_fsm (
                    slow_clock_enable.d =1
                     }
                
-                if(blackoutrate & ~diff.q){
+                if(blackoutrate && ~diff.q){
                     diff.d = 1
                         }
                     
-               if(blackoutrate & diff.q){
+               if(blackoutrate && diff.q){
                       diff.d = 0
                         }
                 pulse_sig.d = 0
                 if(start){
+                start_sig.d = 0
                 game_fsm.d = ChopSticksStates.TURNRANDOM
                     }
 

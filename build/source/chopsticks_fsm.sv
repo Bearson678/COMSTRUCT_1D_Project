@@ -28,7 +28,8 @@ module chopsticks_fsm (
         output reg regfile_we,
         output reg [3:0] debug,
         output reg difficulty,
-        output reg pulse
+        output reg pulse,
+        output reg start_led
     );
     localparam E_ChopSticksStates_START = 8'h0;
     localparam E_ChopSticksStates_TURNRANDOM = 8'h1;
@@ -166,14 +167,14 @@ module chopsticks_fsm (
     localparam E_ChopSticksStates_OPP_TIMER_BRANCHTIMER = 8'h85;
     localparam E_ChopSticksStates_OPP_TIMER_DECREASETIMER = 8'h86;
     logic slowclock;
-    localparam _MP_RISE_1078320298 = 1'h1;
-    localparam _MP_FALL_1078320298 = 1'h0;
+    localparam _MP_RISE_1561493750 = 1'h1;
+    localparam _MP_FALL_1561493750 = 1'h0;
     logic M_slow_clock_edge_in;
     logic M_slow_clock_edge_out;
     
     edge_detector #(
-        .RISE(_MP_RISE_1078320298),
-        .FALL(_MP_FALL_1078320298)
+        .RISE(_MP_RISE_1561493750),
+        .FALL(_MP_FALL_1561493750)
     ) slow_clock_edge (
         .clk(clk),
         .in(M_slow_clock_edge_in),
@@ -185,12 +186,15 @@ module chopsticks_fsm (
     logic D_slow_clock_enable_d, D_slow_clock_enable_q = 1'h0;
     logic D_diff_d, D_diff_q = 1'h0;
     logic D_pulse_sig_d, D_pulse_sig_q = 1'h0;
+    logic D_start_sig_d, D_start_sig_q = 1'h1;
     always @* begin
+        D_start_sig_d = D_start_sig_q;
         D_diff_d = D_diff_q;
         D_pulse_sig_d = D_pulse_sig_q;
         D_slow_clock_enable_d = D_slow_clock_enable_q;
         D_game_fsm_d = D_game_fsm_q;
         
+        D_start_sig_d = D_start_sig_q;
         D_diff_d = D_diff_q;
         D_pulse_sig_d = D_pulse_sig_q;
         slowclock = slowclk;
@@ -205,6 +209,7 @@ module chopsticks_fsm (
         debug = regfile_rd2[2'h3:1'h0];
         difficulty = D_diff_q;
         pulse = D_pulse_sig_q;
+        start_led = D_start_sig_q;
         M_slow_clock_edge_in = slowclock;
         D_slow_clock_enable_d = D_slow_clock_enable_q;
         
@@ -226,14 +231,15 @@ module chopsticks_fsm (
                     if (~D_slow_clock_enable_q) begin
                         D_slow_clock_enable_d = 1'h1;
                     end
-                    if (blackoutrate & ~D_diff_q) begin
+                    if (blackoutrate && ~D_diff_q) begin
                         D_diff_d = 1'h1;
                     end
-                    if (blackoutrate & D_diff_q) begin
+                    if (blackoutrate && D_diff_q) begin
                         D_diff_d = 1'h0;
                     end
                     D_pulse_sig_d = 1'h0;
                     if (start) begin
+                        D_start_sig_d = 1'h0;
                         D_game_fsm_d = 8'h1;
                     end
                 end
@@ -1589,11 +1595,13 @@ module chopsticks_fsm (
             D_slow_clock_enable_q <= 1'h0;
             D_diff_q <= 1'h0;
             D_pulse_sig_q <= 1'h0;
+            D_start_sig_q <= 1'h1;
         end else begin
             D_game_fsm_q <= D_game_fsm_d;
             D_slow_clock_enable_q <= D_slow_clock_enable_d;
             D_diff_q <= D_diff_d;
             D_pulse_sig_q <= D_pulse_sig_d;
+            D_start_sig_q <= D_start_sig_d;
         end
     end
 endmodule

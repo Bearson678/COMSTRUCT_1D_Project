@@ -3,8 +3,8 @@
 # SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
 # IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
 # SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
-# Start of session at: Sat Apr 12 18:11:29 2025
-# Process ID         : 3948
+# Start of session at: Sat Apr 12 21:29:55 2025
+# Process ID         : 33508
 # Current directory  : C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.runs/synth_1
 # Command line       : vivado.exe -log alchitry_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source alchitry_top.tcl
 # Log file           : C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.runs/synth_1/alchitry_top.vds
@@ -19,6 +19,6 @@
 # Host memory        : 16415 MB
 # Swap memory        : 16106 MB
 # Total Virtual      : 32521 MB
-# Available Virtual  : 11116 MB
+# Available Virtual  : 9390 MB
 #-----------------------------------------------------------
 source alchitry_top.tcl -notrace
