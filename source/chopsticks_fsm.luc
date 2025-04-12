@@ -3,15 +3,18 @@
 module chopsticks_fsm (
     input clk,  // clock
     input rst,  // reset
-    input decrease_timer,
+    input slowclk,
+
     input regfile_rd2[32],
     input p1l_button,
     input p1r_button,
     input p2r_button,
     input p2l_button,
+    input blackoutrate,
     input p1split,
     input p2split,
     input rng,
+    input start,
     
     output alufn[6],
     output asel[2],
@@ -21,11 +24,14 @@ module chopsticks_fsm (
     output regfile_ra1[4],
     output regfile_ra2[4],
     output regfile_we,
-    output debug[4]
+    output debug[4],
+    output difficulty,
+    output pulse
 ) {
     //use this to list the states you are testing for your module
     enum ChopSticksStates{
         START,
+        TURNRANDOM,
         //IMPLEMENTING THE TIMER MODULE
         OPTIONSELECT,
         SELECTOPPHANDTOHIT, //IDLE STATE
@@ -207,10 +213,9 @@ module chopsticks_fsm (
         SPCHECK_CHECKHANDSCORE2,
         SPCHECK_BRANCHVALIDHANDS2,
         
-        // to connect to next step
-        SPCHECK_P1SPLITVALID,
-        SPCHECK_P2SPLITVALID,
-        SPCHECK_INVALID        
+        OPP_TIMER_CHECKTIMER,
+        OPP_TIMER_BRANCHTIMER,
+        OPP_TIMER_DECREASETIMER  
         
 
         
@@ -219,18 +224,25 @@ module chopsticks_fsm (
     
     }
     sig slowclock
-    
+
+    //sig tempsig
     // stores the states in a dff
     .clk(clk){
         edge_detector slow_clock_edge(#RISE(1),#FALL(0))
         .rst(rst){
     dff game_fsm[$width(ChopSticksStates)](#INIT(ChopSticksStates.START))
             dff slow_clock_enable(#INIT(0))
+            dff diff(#INIT(0))
+            dff pulse_sig(#INIT(0))
         }
     }
+   
     always {
         //default control signal setings
-        slowclock = decrease_timer
+        //tempsig = rng
+        diff.d = diff.q
+        pulse_sig.d = pulse_sig.q
+        slowclock = slowclk
         alufn = 0
         asel = 0
         bsel = 0
@@ -240,6 +252,8 @@ module chopsticks_fsm (
         regfile_ra1 = d0
         regfile_ra2 = d0
         debug = regfile_rd2[3:0]
+        difficulty = diff.q
+        pulse = pulse_sig.q
         
         slow_clock_edge.in = slowclock // Edge detector takes in the slow_clock signal at rising edge only
         slow_clock_enable.d = slow_clock_enable.q
@@ -255,12 +269,7 @@ module chopsticks_fsm (
         
         game_fsm.d = game_fsm.q
         if(rst){
-                    alufn = b011010
-                    asel = b10
-                    wdsel = 0
-                    regfile_wa = d8
-                    regfile_we = 1
-           
+            
             game_fsm.d = ChopSticksStates.START
 
         }
@@ -269,15 +278,32 @@ module chopsticks_fsm (
             //this is where you start coding out your states
               case(game_fsm.q){
                 ChopSticksStates.START:
+                //tempsig = rng
                 if(~slow_clock_enable.q){
                    slow_clock_enable.d =1
-                if(rng){
+                    }
+               
+                if(blackoutrate & ~diff.q){
+                    diff.d = 1
+                        }
+                    
+               if(blackoutrate & diff.q){
+                      diff.d = 0
+                        }
+                pulse_sig.d = 0
+                if(start){
+                game_fsm.d = ChopSticksStates.TURNRANDOM
+                    }
+
+                
+                ChopSticksStates.TURNRANDOM:
+                     if(rng){
                     alufn = b011100
                     bsel = b10
                     wdsel = 0
                     regfile_wa = d13
                     regfile_we = 1
-                    game_fsm.d = ChopSticksStates.OPTIONSELECT        
+                           
                         }
                 else{
                     alufn = b011100
@@ -285,36 +311,27 @@ module chopsticks_fsm (
                     wdsel = 0
                     regfile_wa = d13
                     regfile_we = 1
-                    game_fsm.d = ChopSticksStates.OPTIONSELECT        
-                        }   
-                    }
+                           
+                        }
+                  game_fsm.d = ChopSticksStates.OPTIONSELECT  
                 
                 
                 ChopSticksStates.OPTIONSELECT:
+                pulse_sig.d = 0
                 regfile_ra2 = d13
                 if((p1l_button && ~regfile_rd2[0]&&slow_clock_enable.q)|(p2l_button && regfile_rd2[0]&&slow_clock_enable.q)){
-                    alufn = b011100
-                    bsel = b01
-                    wdsel = 0
-                    regfile_wa = d8
-                    regfile_we = 1
+                //pulse = 1
 
                    game_fsm.d = ChopSticksStates.SELECTOPPHANDTOHIT
                     }
                 else if((p1r_button && ~regfile_rd2[0]&&slow_clock_enable.q)|(p2r_button && regfile_rd2[0]&&slow_clock_enable.q)){
-                    alufn = b011100
-                    bsel = b01
-                    wdsel = 0
-                    regfile_wa = d8
-                    regfile_we = 1
-                    //regfile_ra1 = d8
-                    //regfile_ra2 = d8
-                      
+                   //pulse = 1
+  
                    game_fsm.d = ChopSticksStates.OWN_SELECTHANDTOHIT  
                     }
                     
                 else if((p1split && ~regfile_rd2[0]&&slow_clock_enable.q)|(p2split && regfile_rd2[0]&&slow_clock_enable.q)){
-
+                     //pulse = 1
                      game_fsm.d = ChopSticksStates.SPCHECK_BRANCHPLAYER
                     }
 
@@ -336,6 +353,7 @@ module chopsticks_fsm (
                 else if(p2r_button && ~p1r_button && ~p2l_button && ~p1r_button && ~p1split && ~p2split){//if p2r button
                        game_fsm.d = ChopSticksStates.OPP_BRANCHPLAYERTWOP2R
                     }
+
                     
                     
                 else{
@@ -476,6 +494,12 @@ module chopsticks_fsm (
                     regfile_ra1 = d3
                     debug = b0000 
                game_fsm.d = ChopSticksStates.SEL_OWN_HANDTOHIT
+                
+                
+                
+                
+               
+                    
                 
 
                 //............................................................................................................................................
@@ -1034,7 +1058,7 @@ module chopsticks_fsm (
                     regfile_ra1 = b1010
                     regfile_wa = b1010
                     wdsel = b00
-                if(decrease_timer){
+                if(slow_clock_edge.out){
                     regfile_we = b1
                     game_fsm.d = ChopSticksStates.SPCHECK_BRANCHVALIDHANDS1
                     }
@@ -1130,7 +1154,7 @@ module chopsticks_fsm (
                     regfile_ra1 = b1010
                     regfile_wa = b1010
                     wdsel = b00
-                if(decrease_timer){
+                if(slow_clock_edge.out){
                     regfile_we = b1
                     game_fsm.d = ChopSticksStates.SPCHECK_BRANCHVALIDHANDS2
                     }
@@ -1899,6 +1923,7 @@ module chopsticks_fsm (
                     regfile_we = b1
                     regfile_wa = b1101
                     wdsel = b00
+                    pulse_sig.d = 1
                      game_fsm.d = ChopSticksStates.OPTIONSELECT                     
                 
                                                 

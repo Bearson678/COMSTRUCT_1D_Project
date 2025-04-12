@@ -43,11 +43,12 @@ module alchitry_top (
             multi_seven_seg seg(#DIV(SEVEN_SEG_DIV))
         }
     }
+    
     bin_to_dec bin_to_dec_converter(#DIGITS(4))
     always{
         //Default FPGA settings
         reset_cond.in = ~rst_n
-        rst =reset_cond.out
+        rst = reset_cond.out 
         usb_tx = usb_rx
         led = 8h00             // turn LEDs off
         io_led = 3x{{8h00}}    // turn LEDs off
@@ -76,19 +77,30 @@ module alchitry_top (
         cd.p2r_button = p2r_button_edge_detector.out
         cd.p1split = p1split_button_edge_detector.out
         cd.p2split = io_dip[0][0]
+        cd.blackoutbutton = io_dip[1][0]
+        cd.start = io_dip[2][0]
+        rst = io_dip[2][7]
         
         //map datapath output to leds
+        //second to pinky fingers
         io_led[2][7:4] = cd.p1l_score_out[3:0] 
         io_led[2][3:0] = cd.p1r_score_out[3:0] 
         io_led[1][7:4] = cd.p2l_score_out[3:0] 
         io_led[1][3:0] = cd.p2r_score_out[3:0] 
+        //avail leds
         io_led[0][7] = cd.p1l_avail[0] 
         io_led[0][6]= cd.p1r_avail[0] 
         io_led[0][5]= cd.p2l_avail[0] 
         io_led[0][4]= cd.p2r_avail[0] 
-        io_led[0][3:0] = cd.timer_led_out[3:0] 
+        //led score for the thumbs, only lights up at game ends
+        io_led[0][3] = cd.p1l_score_out[4]
+        io_led[0][2] = cd.p1r_score_out[4]
+        io_led[0][1] = cd.p2l_score_out[4]
+        io_led[0][0] = cd.p2r_score_out[4]
+        //misc
         led[7:4] = cd.debugging
-        led[0] = cd.slow_clock_out 
+        led[2:0] = cd.slow_clock_out[2:0]
+        led[3] = cd.change_mode
         
         
         

@@ -16,7 +16,8 @@ module game_regfiles (
     output p1r_avail_out[32],
     output p2l_avail_out[32],
     output p2r_avail_out[32],
-    output timer_out[32]
+    output timer_out[32],
+    output curr_player[32]
 ) {
     .clk(clk){
         .rst(rst){
@@ -110,7 +111,9 @@ module game_regfiles (
         p1r_avail_out = p1r_avail.q
         p2l_avail_out = p2l_avail.q
         p2r_avail_out = p2r_avail.q
+        curr_player = current_player.q
         timer_out = current_player.q
+        
         
         
     }

@@ -25,7 +25,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.runs/synth_1'
+HD_PWD='C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.runs/synth_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log

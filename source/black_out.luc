@@ -1,0 +1,35 @@
+module black_out (
+    input clk,  // clock
+    input rst,  // reset
+    input difficulty,
+    input pulse,
+    output out
+) {
+    sig black_out_rate
+    
+    
+    always {
+        
+        case(difficulty){
+            d0:
+            black_out_rate = 0
+            d1:
+            black_out_rate = 1
+            
+            default: black_out_rate = 0
+        }
+        out = 0
+        if(black_out_rate){
+            if (pulse){
+                out = 1
+            }
+            else{
+                out = 0
+            }
+          
+        }
+        else{
+            out = 0
+        }
+    }
+}

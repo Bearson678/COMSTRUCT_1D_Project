@@ -184,6 +184,18 @@
                     "type": "DiskFile",
                     "path": "source/random_number_generator.luc"
                 }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/led_encoder.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/black_out.luc"
+                }
             }
         ],
         "constraintFiles": [

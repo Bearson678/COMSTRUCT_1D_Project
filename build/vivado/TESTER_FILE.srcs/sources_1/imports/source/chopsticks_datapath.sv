@@ -12,6 +12,8 @@ module chopsticks_datapath #(
         input wire p1r_button,
         input wire p2r_button,
         input wire p2l_button,
+        input wire blackoutbutton,
+        input wire start,
         input wire p1split,
         input wire p2split,
         input wire clk,
@@ -26,7 +28,9 @@ module chopsticks_datapath #(
         output reg [31:0] p2r_avail,
         output reg [31:0] timer_led_out,
         output reg [3:0] debugging,
-        output reg slow_clock_out
+        output reg [3:0] slow_clock_out,
+        output reg [31:0] curr_player,
+        output reg change_mode
     );
     logic [31:0] M_game_alu_rd1;
     logic [31:0] M_game_alu_rd2;
@@ -47,66 +51,66 @@ module chopsticks_datapath #(
     );
     
     
-    localparam _MP_SIZE_1865386088 = 1'h1;
-    localparam _MP_DIV_1865386088 = SLOW_CLOCK_DIV;
-    localparam _MP_TOP_1865386088 = 1'h0;
-    localparam _MP_UP_1865386088 = 1'h1;
-    logic [0:0] M_game_timer_clock_value;
+    localparam _MP_SIZE_1172572368 = 1'h1;
+    localparam _MP_DIV_1172572368 = SLOW_CLOCK_DIV;
+    localparam _MP_TOP_1172572368 = 1'h0;
+    localparam _MP_UP_1172572368 = 1'h1;
+    logic [0:0] M_slow_clock_value;
     
     counter #(
-        .SIZE(_MP_SIZE_1865386088),
-        .DIV(_MP_DIV_1865386088),
-        .TOP(_MP_TOP_1865386088),
-        .UP(_MP_UP_1865386088)
-    ) game_timer_clock (
+        .SIZE(_MP_SIZE_1172572368),
+        .DIV(_MP_DIV_1172572368),
+        .TOP(_MP_TOP_1172572368),
+        .UP(_MP_UP_1172572368)
+    ) slow_clock (
         .rst(rst),
         .clk(clk),
-        .value(M_game_timer_clock_value)
+        .value(M_slow_clock_value)
     );
     
     
-    localparam _MP_SIZE_1786301994 = 1'h1;
-    localparam _MP_DIV_1786301994 = CLOCK_DIVIDER;
-    localparam _MP_TOP_1786301994 = 1'h0;
-    localparam _MP_UP_1786301994 = 1'h1;
-    logic [0:0] M_slow_clk_value;
+    localparam _MP_SIZE_1828087953 = 1'h1;
+    localparam _MP_DIV_1828087953 = CLOCK_DIVIDER;
+    localparam _MP_TOP_1828087953 = 1'h0;
+    localparam _MP_UP_1828087953 = 1'h1;
+    logic [0:0] M_rnger_value;
     
     counter #(
-        .SIZE(_MP_SIZE_1786301994),
-        .DIV(_MP_DIV_1786301994),
-        .TOP(_MP_TOP_1786301994),
-        .UP(_MP_UP_1786301994)
-    ) slow_clk (
+        .SIZE(_MP_SIZE_1828087953),
+        .DIV(_MP_DIV_1828087953),
+        .TOP(_MP_TOP_1828087953),
+        .UP(_MP_UP_1828087953)
+    ) rnger (
         .rst(rst),
         .clk(clk),
-        .value(M_slow_clk_value)
+        .value(M_rnger_value)
     );
     
     
-    localparam _MP_SIZE_1255095661 = 4'h8;
+    localparam _MP_SIZE_1078905115 = 4'h8;
     logic [7:0] M_generator_out;
     
     random_number_generator #(
-        .SIZE(_MP_SIZE_1255095661)
+        .SIZE(_MP_SIZE_1078905115)
     ) generator (
-        .slow_clk(M_slow_clk_value),
+        .slow_clk(M_rnger_value),
         .refresh(rst),
         .clk(clk),
         .out(M_generator_out)
     );
     
     
-    localparam _MP_RISE_682150619 = 1'h1;
-    localparam _MP_FALL_682150619 = 1'h0;
-    logic M_edge_detector_game_timer_out;
+    localparam _MP_RISE_535091892 = 1'h1;
+    localparam _MP_FALL_535091892 = 1'h0;
+    logic M_edge_detector_slow_clk_edge_out;
     
     edge_detector #(
-        .RISE(_MP_RISE_682150619),
-        .FALL(_MP_FALL_682150619)
-    ) edge_detector_game_timer (
-        .in(M_game_timer_clock_value),
+        .RISE(_MP_RISE_535091892),
+        .FALL(_MP_FALL_535091892)
+    ) edge_detector_slow_clk_edge (
+        .in(M_slow_clock_value),
         .clk(clk),
-        .out(M_edge_detector_game_timer_out)
+        .out(M_edge_detector_slow_clk_edge_out)
     );
     
     
@@ -120,6 +124,8 @@ module chopsticks_datapath #(
     logic [3:0] M_chopsticks_fsm_regfile_ra2;
     logic M_chopsticks_fsm_regfile_we;
     logic [3:0] M_chopsticks_fsm_debug;
+    logic M_chopsticks_fsm_difficulty;
+    logic M_chopsticks_fsm_pulse;
     
     chopsticks_fsm chopsticks_fsm (
         .p1l_button(p1l_button),
@@ -128,8 +134,10 @@ module chopsticks_datapath #(
         .p2r_button(p2r_button),
         .p1split(p1split),
         .p2split(p2split),
-        .decrease_timer(M_edge_detector_game_timer_out),
+        .blackoutrate(blackoutbutton),
+        .slowclk(M_edge_detector_slow_clk_edge_out),
         .rst(rst),
+        .start(start),
         .rng(M_generator_out[1'h0]),
         .clk(clk),
         .regfile_rd2(M_chopsticks_fsm_regfile_rd2),
@@ -141,7 +149,20 @@ module chopsticks_datapath #(
         .regfile_ra1(M_chopsticks_fsm_regfile_ra1),
         .regfile_ra2(M_chopsticks_fsm_regfile_ra2),
         .regfile_we(M_chopsticks_fsm_regfile_we),
-        .debug(M_chopsticks_fsm_debug)
+        .debug(M_chopsticks_fsm_debug),
+        .difficulty(M_chopsticks_fsm_difficulty),
+        .pulse(M_chopsticks_fsm_pulse)
+    );
+    
+    
+    logic M_black_out_out;
+    
+    black_out black_out (
+        .difficulty(M_chopsticks_fsm_difficulty),
+        .rst(rst),
+        .pulse(M_chopsticks_fsm_pulse),
+        .clk(clk),
+        .out(M_black_out_out)
     );
     
     
@@ -157,6 +178,7 @@ module chopsticks_datapath #(
     logic [31:0] M_game_regfiles_p2l_avail_out;
     logic [31:0] M_game_regfiles_p2r_avail_out;
     logic [31:0] M_game_regfiles_timer_out;
+    logic [31:0] M_game_regfiles_curr_player;
     
     game_regfiles game_regfiles (
         .we(M_chopsticks_fsm_regfile_we),
@@ -176,12 +198,38 @@ module chopsticks_datapath #(
         .p1r_avail_out(M_game_regfiles_p1r_avail_out),
         .p2l_avail_out(M_game_regfiles_p2l_avail_out),
         .p2r_avail_out(M_game_regfiles_p2r_avail_out),
-        .timer_out(M_game_regfiles_timer_out)
+        .timer_out(M_game_regfiles_timer_out),
+        .curr_player(M_game_regfiles_curr_player)
+    );
+    
+    
+    logic [3:0] D_black_d, D_black_q = 1'h0;
+    logic [31:0] M_led_code_p1l_light;
+    logic [31:0] M_led_code_p1r_light;
+    logic [31:0] M_led_code_p2l_light;
+    logic [31:0] M_led_code_p2r_light;
+    
+    led_encoder led_code (
+        .p1l(M_game_regfiles_p1l_score_out),
+        .p1r(M_game_regfiles_p1r_score_out),
+        .p2l(M_game_regfiles_p2l_score_out),
+        .p2r(M_game_regfiles_p2r_score_out),
+        .p1l_light(M_led_code_p1l_light),
+        .p1r_light(M_led_code_p1r_light),
+        .p2l_light(M_led_code_p2l_light),
+        .p2r_light(M_led_code_p2r_light)
     );
     
     
     always @* begin
+        D_black_d = D_black_q;
+        
+        if (rst) begin
+            D_black_d = 1'h0;
+        end
+        D_black_d = D_black_q + M_black_out_out;
         M_chopsticks_fsm_regfile_rd2 = M_game_regfiles_rd2;
+        change_mode = M_chopsticks_fsm_difficulty;
         M_game_alu_rd1 = M_game_regfiles_rd1;
         M_game_alu_rd2 = M_game_regfiles_rd2;
         M_game_alu_asel = M_chopsticks_fsm_asel;
@@ -189,18 +237,72 @@ module chopsticks_datapath #(
         M_game_alu_wdsel = M_chopsticks_fsm_wdsel;
         M_game_alu_alufn_Signal = M_chopsticks_fsm_alufn;
         M_game_regfiles_data = M_game_alu_alu_output;
-        p1l_score_out = M_game_regfiles_p1l_score_out;
-        p1r_score_out = M_game_regfiles_p1r_score_out;
-        p2l_score_out = M_game_regfiles_p2l_score_out;
-        p2r_score_out = M_game_regfiles_p2r_score_out;
+        p1l_score_out = M_led_code_p1l_light;
+        p1r_score_out = M_led_code_p1r_light;
+        p2l_score_out = M_led_code_p2l_light;
+        p2r_score_out = M_led_code_p2r_light;
         p1l_avail = M_game_regfiles_p1l_avail_out;
         p1r_avail = M_game_regfiles_p1r_avail_out;
         p2l_avail = M_game_regfiles_p2l_avail_out;
         p2r_avail = M_game_regfiles_p2r_avail_out;
         timer_led_out = M_game_regfiles_timer_out;
         debugging = M_chopsticks_fsm_debug;
-        slow_clock_out = M_game_timer_clock_value;
+        curr_player = M_game_regfiles_curr_player;
+        slow_clock_out = D_black_q;
+        if ((M_led_code_p1l_light == 5'h1f && M_led_code_p1r_light == 5'h1f) | (M_led_code_p2l_light == 5'h1f && M_led_code_p2r_light == 5'h1f)) begin
+            p1l_score_out = M_led_code_p1l_light;
+            p1r_score_out = M_led_code_p1r_light;
+            p2l_score_out = M_led_code_p2l_light;
+            p2r_score_out = M_led_code_p2r_light;
+            p1l_avail = M_game_regfiles_p1l_avail_out;
+            p1r_avail = M_game_regfiles_p1r_avail_out;
+            p2l_avail = M_game_regfiles_p2l_avail_out;
+            p2r_avail = M_game_regfiles_p2r_avail_out;
+            timer_led_out = M_game_regfiles_timer_out;
+            debugging = M_chopsticks_fsm_debug;
+            curr_player = M_game_regfiles_curr_player;
+            slow_clock_out = D_black_q;
+        end else begin
+            if (D_black_q == 3'h5) begin
+                D_black_d = 1'h0;
+            end else begin
+                if (D_black_q == 3'h4) begin
+                    p1l_score_out = 1'h0;
+                    p1r_score_out = 1'h0;
+                    p2l_score_out = 1'h0;
+                    p2r_score_out = 1'h0;
+                    p1l_avail = M_game_regfiles_p1l_avail_out;
+                    p1r_avail = M_game_regfiles_p1r_avail_out;
+                    p2l_avail = M_game_regfiles_p2l_avail_out;
+                    p2r_avail = M_game_regfiles_p2r_avail_out;
+                    timer_led_out = M_game_regfiles_timer_out;
+                    debugging = M_chopsticks_fsm_debug;
+                    curr_player = M_game_regfiles_curr_player;
+                    slow_clock_out = D_black_q;
+                end else begin
+                    p1l_score_out = M_led_code_p1l_light;
+                    p1r_score_out = M_led_code_p1r_light;
+                    p2l_score_out = M_led_code_p2l_light;
+                    p2r_score_out = M_led_code_p2r_light;
+                    p1l_avail = M_game_regfiles_p1l_avail_out;
+                    p1r_avail = M_game_regfiles_p1r_avail_out;
+                    p2l_avail = M_game_regfiles_p2l_avail_out;
+                    p2r_avail = M_game_regfiles_p2r_avail_out;
+                    timer_led_out = M_game_regfiles_timer_out;
+                    debugging = M_chopsticks_fsm_debug;
+                    curr_player = M_game_regfiles_curr_player;
+                    slow_clock_out = D_black_q;
+                end
+            end
+        end
     end
     
     
+    always @(posedge (clk)) begin
+        if ((rst) == 1'b1) begin
+            D_black_q <= 1'h0;
+        end else begin
+            D_black_q <= D_black_d;
+        end
+    end
 endmodule

@@ -1,0 +1,79 @@
+module led_encoder (
+    input p1l[32],  
+    input p1r[32],
+    input p2l[32],
+    input p2r[32],
+    output p1l_light[32],
+    output p1r_light[32],
+    output p2l_light[32],
+    output p2r_light[32]
+
+
+) {
+    always {
+        case(p1l){
+            d1: 
+                p1l_light = d1
+            d2: 
+                p1l_light = d3
+            d3: 
+                p1l_light = d7
+            d4: 
+                p1l_light = d15
+            hFFFFFFFF:
+                p1l_light = d31
+            default:
+            p1l_light = d0
+            
+        }
+        
+                case(p1r){
+            d1: 
+                p1r_light = d1
+            d2: 
+                p1r_light = d3
+            d3: 
+                p1r_light = d7
+            d4: 
+                p1r_light = d15
+           hFFFFFFFF:
+                p1r_light = d31
+            default:
+            p1r_light = d0
+            
+        }
+        
+                case(p2l){
+            d1: 
+                p2l_light = d1
+            d2: 
+                p2l_light = d3
+            d3: 
+                p2l_light = d7
+            d4: 
+                p2l_light = d15
+           hFFFFFFFF:
+                p2l_light = d31
+            default:
+            p2l_light = d0
+            
+        }
+        
+                case(p2r){
+            d1: 
+                p2r_light = d1
+            d2: 
+                p2r_light = d3
+            d3: 
+                p2r_light = d7
+            d4: 
+                p2r_light = d15
+            hFFFFFFFF:
+                p2r_light = d31
+            default:
+            p2r_light = d0
+            
+        }
+        
+    }
+}

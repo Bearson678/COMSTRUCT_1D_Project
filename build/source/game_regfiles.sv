@@ -22,7 +22,8 @@ module game_regfiles (
         output reg [31:0] p1r_avail_out,
         output reg [31:0] p2l_avail_out,
         output reg [31:0] p2r_avail_out,
-        output reg [31:0] timer_out
+        output reg [31:0] timer_out,
+        output reg [31:0] curr_player
     );
     logic [31:0] D_p1l_score_d, D_p1l_score_q = 1'h1;
     logic [31:0] D_p1r_score_d, D_p1r_score_q = 1'h1;
@@ -216,6 +217,7 @@ module game_regfiles (
         p1r_avail_out = D_p1r_avail_q;
         p2l_avail_out = D_p2l_avail_q;
         p2r_avail_out = D_p2r_avail_q;
+        curr_player = D_current_player_q;
         timer_out = D_current_player_q;
     end
     

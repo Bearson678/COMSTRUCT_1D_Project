@@ -12,20 +12,20 @@ module x_bitshiftrightsigned #(
         input wire pad,
         output reg [31:0] out
     );
-    logic [31:0] R_7106ff47_i;
-    logic [31:0] RR_7106ff47_i;
+    logic [31:0] R_3c04dff6_i;
+    logic [31:0] RR_3c04dff6_i;
     logic [31:0] M_mux_2_32_s0;
     logic [31:0][1:0] M_mux_2_32_in;
     logic [31:0] M_mux_2_32_out;
     
-    genvar idx_0_590495433;
+    genvar idx_0_2070194109;
     
     generate
-        for (idx_0_590495433 = 0; idx_0_590495433 < 32; idx_0_590495433 = idx_0_590495433 + 1) begin: forLoop_idx_0_590495433
+        for (idx_0_2070194109 = 0; idx_0_2070194109 < 32; idx_0_2070194109 = idx_0_2070194109 + 1) begin: forLoop_idx_0_2070194109
             mux_2 mux_2_32 (
-                .s0(M_mux_2_32_s0[idx_0_590495433]),
-                .in(M_mux_2_32_in[idx_0_590495433]),
-                .out(M_mux_2_32_out[idx_0_590495433])
+                .s0(M_mux_2_32_s0[idx_0_2070194109]),
+                .in(M_mux_2_32_in[idx_0_2070194109]),
+                .out(M_mux_2_32_out[idx_0_2070194109])
             );
         end
     endgenerate
@@ -36,10 +36,10 @@ module x_bitshiftrightsigned #(
         shifted_bits = {{SHIFT{pad}}, a[5'h1f:SHIFT]};
         M_mux_2_32_in = {{2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0}};
         M_mux_2_32_s0 = {6'h20{shift}};
-        for (RR_7106ff47_i = 0; RR_7106ff47_i < 6'h20; RR_7106ff47_i = RR_7106ff47_i + 1) begin
-      R_7106ff47_i = (0) + RR_7106ff47_i * (1);
-            M_mux_2_32_in[R_7106ff47_i][1'h0] = a[R_7106ff47_i];
-            M_mux_2_32_in[R_7106ff47_i][1'h1] = shifted_bits[R_7106ff47_i];
+        for (RR_3c04dff6_i = 0; RR_3c04dff6_i < 6'h20; RR_3c04dff6_i = RR_3c04dff6_i + 1) begin
+      R_3c04dff6_i = (0) + RR_3c04dff6_i * (1);
+            M_mux_2_32_in[R_3c04dff6_i][1'h0] = a[R_3c04dff6_i];
+            M_mux_2_32_in[R_3c04dff6_i][1'h1] = shifted_bits[R_3c04dff6_i];
         end
         out = M_mux_2_32_out;
     end

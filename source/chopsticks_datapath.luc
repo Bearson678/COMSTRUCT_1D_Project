@@ -8,6 +8,8 @@ module chopsticks_datapath #(
     input p1r_button,
     input p2r_button,
     input p2l_button,
+    input blackoutbutton,
+    input start,
     input p1split,
     input p2split,
     input clk,  // clock
@@ -22,19 +24,23 @@ module chopsticks_datapath #(
     output p2r_avail[32],
     output timer_led_out [32],
     output debugging[4],
-    output slow_clock_out
+    output slow_clock_out[4],
+    output curr_player[32],
+    output change_mode
 ) {
 
     alu_expandedwithmuxes game_alu
-
+    //sig tempsig
     
     
     .clk(clk){
         // Using of counter module to count down, 
-        counter game_timer_clock(#SIZE(1),#DIV(SLOW_CLOCK_DIV),#UP(1),.rst(rst))
-        counter slow_clk(#SIZE(1), #DIV(CLOCK_DIVIDER),.rst(rst))
-        random_number_generator generator(.slow_clk(slow_clk.value), .refresh(rst))
-        edge_detector edge_detector_game_timer(#RISE(1),#FALL(0),.in(game_timer_clock.value))
+        counter slow_clock(#SIZE(1),#DIV(SLOW_CLOCK_DIV),#UP(1),.rst(rst))
+        counter rnger(#SIZE(1), #DIV(CLOCK_DIVIDER),.rst(rst))
+        random_number_generator generator(.slow_clk(rnger.value), .refresh(rst))
+        
+        edge_detector edge_detector_slow_clk_edge(#RISE(1),#FALL(0),.in(slow_clock.value))
+        
         
         //instantiating the FSM and connecting the inputs of the FSM to inputs of datapath
         chopsticks_fsm chopsticks_fsm(
@@ -44,26 +50,39 @@ module chopsticks_datapath #(
             .p2r_button(p2r_button),
             .p1split(p1split),
             .p2split(p2split),
-            .decrease_timer(edge_detector_game_timer.out),
+            .blackoutrate(blackoutbutton),
+            .slowclk(edge_detector_slow_clk_edge.out),
             .rst(rst),
-            .rng(generator.out[0])
-            
-        )
+            .start(start),
+            .rng(generator.out[0]))
+        
+       black_out black_out(.difficulty(chopsticks_fsm.difficulty),.rst(rst),.pulse(chopsticks_fsm.pulse))     
+        
         //instantiating the REGFILE and connecting the inputs of the REGFILE to inputs of datapath
         game_regfiles game_regfiles(
             .we(chopsticks_fsm.regfile_we),
             .wa(chopsticks_fsm.regfile_wa),
             .ra1(chopsticks_fsm.regfile_ra1),
             .ra2(chopsticks_fsm.regfile_ra2),
-            .rst(rst)
+            .rst(rst))
             
-        )
+        dff black[4](#INIT(0),.rst(rst))
+
+            
+        
     }
-    
+    led_encoder led_code(.p1l(game_regfiles.p1l_score_out),
+    .p1r(game_regfiles.p1r_score_out),.p2l(game_regfiles.p2l_score_out),
+    .p2r(game_regfiles.p2r_score_out))
     
     always {
+        if(rst){
+            black.d = 0
+        }
+        black.d = black.q + black_out.out
         // connecting the regfile RD2 to the FSM
         chopsticks_fsm.regfile_rd2 = game_regfiles.rd2
+        change_mode = chopsticks_fsm.difficulty
         
         
         //connecting the regfile and fsm outputs to the ALU section
@@ -79,17 +98,65 @@ module chopsticks_datapath #(
         game_regfiles.data = game_alu.alu_output
         
         //connect output of datapath with outputs from the regfile
-        p1l_score_out = game_regfiles.p1l_score_out 
-        p1r_score_out = game_regfiles.p1r_score_out 
-        p2l_score_out = game_regfiles.p2l_score_out 
-        p2r_score_out = game_regfiles.p2r_score_out 
+        p1l_score_out = led_code.p1l_light
+        p1r_score_out = led_code.p1r_light
+        p2l_score_out = led_code.p2l_light 
+        p2r_score_out = led_code.p2r_light
         p1l_avail = game_regfiles.p1l_avail_out 
         p1r_avail = game_regfiles.p1r_avail_out 
         p2l_avail = game_regfiles.p2l_avail_out 
         p2r_avail = game_regfiles.p2r_avail_out 
         timer_led_out = game_regfiles.timer_out 
         debugging = chopsticks_fsm.debug
-        slow_clock_out = game_timer_clock.value
+        curr_player = game_regfiles.curr_player
+        slow_clock_out = black.q 
+        
+        
+        if((led_code.p1l_light == 31 && led_code.p1r_light == 31)|(led_code.p2l_light == 31 && led_code.p2r_light == 31)){
+        p1l_score_out = led_code.p1l_light
+        p1r_score_out = led_code.p1r_light
+        p2l_score_out = led_code.p2l_light 
+        p2r_score_out = led_code.p2r_light
+        p1l_avail = game_regfiles.p1l_avail_out 
+        p1r_avail = game_regfiles.p1r_avail_out 
+        p2l_avail = game_regfiles.p2l_avail_out 
+        p2r_avail = game_regfiles.p2r_avail_out 
+        timer_led_out = game_regfiles.timer_out 
+        debugging = chopsticks_fsm.debug
+        curr_player = game_regfiles.curr_player
+        slow_clock_out = black.q 
+        }
+        else if(black.q == 5){
+            black.d = 0
+        }
+        else if(black.q == 4){
+        p1l_score_out = 0
+        p1r_score_out = 0
+        p2l_score_out = 0
+        p2r_score_out = 0
+        p1l_avail = game_regfiles.p1l_avail_out 
+        p1r_avail = game_regfiles.p1r_avail_out 
+        p2l_avail = game_regfiles.p2l_avail_out 
+        p2r_avail = game_regfiles.p2r_avail_out 
+        timer_led_out = game_regfiles.timer_out 
+        debugging = chopsticks_fsm.debug
+        curr_player = game_regfiles.curr_player
+        slow_clock_out = black.q 
+        }
+        else{
+        p1l_score_out = led_code.p1l_light
+        p1r_score_out = led_code.p1r_light
+        p2l_score_out = led_code.p2l_light 
+        p2r_score_out = led_code.p2r_light
+        p1l_avail = game_regfiles.p1l_avail_out 
+        p1r_avail = game_regfiles.p1r_avail_out 
+        p2l_avail = game_regfiles.p2l_avail_out 
+        p2r_avail = game_regfiles.p2r_avail_out 
+        timer_led_out = game_regfiles.timer_out 
+        debugging = chopsticks_fsm.debug
+        curr_player = game_regfiles.curr_player
+        slow_clock_out = black.q 
+        }
         
         
     }

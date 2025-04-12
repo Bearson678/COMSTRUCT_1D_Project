@@ -4,7 +4,7 @@
 
 set TIME_start [clock seconds] 
 namespace eval ::optrace {
-  variable script "C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.runs/synth_1/alchitry_top.tcl"
+  variable script "C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.runs/synth_1/alchitry_top.tcl"
   variable category "vivado_synth"
 }
 
@@ -62,44 +62,46 @@ create_project -in_memory -part xc7a35tftg256-1
 set_param project.singleFileAddWarning.threshold 0
 set_param project.compositeFile.enableAutoGeneration 0
 set_param synth.vivado.isSynthRun true
-set_property webtalk.parent_dir {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.cache/wt} [current_project]
-set_property parent.project_path {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.xpr} [current_project]
+set_property webtalk.parent_dir {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.cache/wt} [current_project]
+set_property parent.project_path {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.xpr} [current_project]
 set_property default_lib xil_defaultlib [current_project]
 set_property target_language Verilog [current_project]
 set_property ip_cache_permissions {read write} [current_project]
 OPTRACE "Creating in-memory project" END { }
 OPTRACE "Adding files" START { }
 read_verilog -library xil_defaultlib -sv {
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/adder.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu_expandedwithmuxes.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/bin_to_dec.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/boolean.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/button_conditioner.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_datapath.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_fsm.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/compare.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/counter.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/decoder.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/divider2.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/edge_detector.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/fa.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/game_regfiles.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/multi_seven_seg.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/multiplier.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_2.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_4.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/pipeline.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/pn_gen.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/random_number_generator.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/rca.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/reset_conditioner.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/seven_seg.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/shifter.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv}
-  {C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alchitry_top.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/adder.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alu_expandedwithmuxes.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/bin_to_dec.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/black_out.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/boolean.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/button_conditioner.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_datapath.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/chopsticks_fsm.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/compare.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/counter.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/decoder.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/divider2.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/edge_detector.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/fa.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/game_regfiles.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/led_encoder.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/multi_seven_seg.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/multiplier.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_2.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/mux_4.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/pipeline.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/pn_gen.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/random_number_generator.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/rca.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/reset_conditioner.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/seven_seg.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/shifter.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftleft.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftright.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/x_bitshiftrightsigned.sv}
+  {C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/vivado/TESTER_FILE.srcs/sources_1/imports/source/alchitry_top.sv}
 }
 OPTRACE "Adding files" END { }
 # Mark all dcp files as not used in implementation to prevent them from being
@@ -110,11 +112,11 @@ OPTRACE "Adding files" END { }
 foreach dcp [get_files -quiet -all -filter file_type=="Design\ Checkpoint"] {
   set_property used_in_implementation false $dcp
 }
-read_xdc {{C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/alchitry.xdc}}
-set_property used_in_implementation false [get_files {{C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/alchitry.xdc}}]
+read_xdc {{C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/constraint/alchitry.xdc}}
+set_property used_in_implementation false [get_files {{C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/constraint/alchitry.xdc}}]
 
-read_xdc {{C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/au_props.xdc}}
-set_property used_in_implementation false [get_files {{C:/Users/HP Victus/Downloads/Alchitry Labs/TESTER_FILE/build/constraint/au_props.xdc}}]
+read_xdc {{C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/constraint/au_props.xdc}}
+set_property used_in_implementation false [get_files {{C:/Users/HP Victus/Downloads/Alchitry Labs/CHOPSTICK_GAME/build/constraint/au_props.xdc}}]
 
 set_param ips.enableIPCacheLiteLoad 1
 close [open __synthesis_is_running__ w]

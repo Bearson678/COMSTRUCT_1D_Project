@@ -7,15 +7,17 @@
 module chopsticks_fsm (
         input wire clk,
         input wire rst,
-        input wire decrease_timer,
+        input wire slowclk,
         input wire [31:0] regfile_rd2,
         input wire p1l_button,
         input wire p1r_button,
         input wire p2r_button,
         input wire p2l_button,
+        input wire blackoutrate,
         input wire p1split,
         input wire p2split,
         input wire rng,
+        input wire start,
         output reg [5:0] alufn,
         output reg [1:0] asel,
         output reg [1:0] bsel,
@@ -24,151 +26,154 @@ module chopsticks_fsm (
         output reg [3:0] regfile_ra1,
         output reg [3:0] regfile_ra2,
         output reg regfile_we,
-        output reg [3:0] debug
+        output reg [3:0] debug,
+        output reg difficulty,
+        output reg pulse
     );
     localparam E_ChopSticksStates_START = 8'h0;
-    localparam E_ChopSticksStates_OPTIONSELECT = 8'h1;
-    localparam E_ChopSticksStates_SELECTOPPHANDTOHIT = 8'h2;
-    localparam E_ChopSticksStates_OPP_BRANCHPLAYERONEP1L = 8'h3;
-    localparam E_ChopSticksStates_OPP_BRANCHPLAYERONEP1R = 8'h4;
-    localparam E_ChopSticksStates_OPP_BRANCHPLAYERTWOP2L = 8'h5;
-    localparam E_ChopSticksStates_OPP_BRANCHPLAYERTWOP2R = 8'h6;
-    localparam E_ChopSticksStates_OPP_UPDATETEMP1P1LADDR = 8'h7;
-    localparam E_ChopSticksStates_OPP_UPDATETEMP1P1RADDR = 8'h8;
-    localparam E_ChopSticksStates_OPP_UPDATETEMP1P2LADDR = 8'h9;
-    localparam E_ChopSticksStates_OPP_UPDATETEMP1P2RADDR = 8'ha;
-    localparam E_ChopSticksStates_OPP_UPDATETEMP2P1L = 8'hb;
-    localparam E_ChopSticksStates_OPP_UPDATETEMP2P1R = 8'hc;
-    localparam E_ChopSticksStates_OPP_UPDATETEMP2P2L = 8'hd;
-    localparam E_ChopSticksStates_OPP_UPDATETEMP2P2R = 8'he;
-    localparam E_ChopSticksStates_SEL_OWN_HANDTOHIT = 8'hf;
-    localparam E_ChopSticksStates_SEL_OWN_BRANCHPLAYERONEP1L = 8'h10;
-    localparam E_ChopSticksStates_SEL_OWN_BRANCHPLAYERONEP1R = 8'h11;
-    localparam E_ChopSticksStates_SEL_OWN_BRANCHPLAYERTWOP2L = 8'h12;
-    localparam E_ChopSticksStates_SEL_OWN_BRANCHPLAYERTWOP2R = 8'h13;
-    localparam E_ChopSticksStates_SEL_OWN_UPDATETEMP3P1L = 8'h14;
-    localparam E_ChopSticksStates_SEL_OWN_UPDATETEMP3P1R = 8'h15;
-    localparam E_ChopSticksStates_SEL_OWN_UPDATETEMP3P2L = 8'h16;
-    localparam E_ChopSticksStates_SEL_OWN_UPDATETEMP3P2R = 8'h17;
-    localparam E_ChopSticksStates_ATCHECK_CHECKTEMP2 = 8'h18;
-    localparam E_ChopSticksStates_ATCHECK_BRANCHTEMP4TOTEMP3 = 8'h19;
-    localparam E_ChopSticksStates_ATCHECK_BRANCHTEMP4TOLEGAL = 8'h1a;
-    localparam E_ChopSticksStates_ATCHECK_CHECKTEMP3 = 8'h1b;
-    localparam E_ChopSticksStates_ATCHECK_LEGAL = 8'h1c;
-    localparam E_ChopSticksStates_ATCHECK_ILLEGAL = 8'h1d;
-    localparam E_ChopSticksStates_ATK_CALC_RESULT = 8'h1e;
-    localparam E_ChopSticksStates_ATK_CHECK_ATTACKEDHAND_P1L = 8'h1f;
-    localparam E_ChopSticksStates_ATK_BRANCH_P1L = 8'h20;
-    localparam E_ChopSticksStates_ATK_P1L_5ORLESS = 8'h21;
-    localparam E_ChopSticksStates_ATK_REMOVE_P1LAVAIL = 8'h22;
-    localparam E_ChopSticksStates_ATK_P1L_DEAD_OR_ALIVE = 8'h23;
-    localparam E_ChopSticksStates_ATK_CHECK_ATTACKEDHAND_P1R = 8'h24;
-    localparam E_ChopSticksStates_ATK_BRANCH_P1R = 8'h25;
-    localparam E_ChopSticksStates_ATK_P1R_5ORLESS = 8'h26;
-    localparam E_ChopSticksStates_ATK_REMOVE_P1RAVAIL = 8'h27;
-    localparam E_ChopSticksStates_ATK_P1R_DEAD_OR_ALIVE = 8'h28;
-    localparam E_ChopSticksStates_ATK_CHECK_ATTACKEDHAND_P2L = 8'h29;
-    localparam E_ChopSticksStates_ATK_BRANCH_P2L = 8'h2a;
-    localparam E_ChopSticksStates_ATK_P2L_5ORLESS = 8'h2b;
-    localparam E_ChopSticksStates_ATK_REMOVE_P2LAVAIL = 8'h2c;
-    localparam E_ChopSticksStates_ATK_P2L_DEAD_OR_ALIVE = 8'h2d;
-    localparam E_ChopSticksStates_ATK_P2R_5ORLESS = 8'h2e;
-    localparam E_ChopSticksStates_ATK_REMOVE_P2RAVAIL = 8'h2f;
-    localparam E_ChopSticksStates_ATK_P2R_DEAD_OR_ALIVE = 8'h30;
-    localparam E_ChopSticksStates_BRANCHP1LAVAIL = 8'h31;
-    localparam E_ChopSticksStates_ILL_PENALTYBRANCH = 8'h32;
-    localparam E_ChopSticksStates_ILL_P1RPENALTY = 8'h33;
-    localparam E_ChopSticksStates_ILL_P2RPENALTY = 8'h34;
-    localparam E_ChopSticksStates_WINNER_BRANCHP1LAVAIL = 8'h35;
-    localparam E_ChopSticksStates_WINNER_BRANCHP1RAVAIL = 8'h36;
-    localparam E_ChopSticksStates_WINNER_BRANCHP2LAVAIL = 8'h37;
-    localparam E_ChopSticksStates_WINNER_BRANCHP2RAVAIL = 8'h38;
-    localparam E_ChopSticksStates_WINNER_BRANCHTEMP1 = 8'h39;
-    localparam E_ChopSticksStates_WINNER_BRANCHTEMP2 = 8'h3a;
-    localparam E_ChopSticksStates_WINNER_LIGHTP1RHAND = 8'h3b;
-    localparam E_ChopSticksStates_WINNER_LIGHTP2RHAND = 8'h3c;
-    localparam E_ChopSticksStates_WINNER_OFFP1LHAND = 8'h3d;
-    localparam E_ChopSticksStates_WINNER_OFFP1RHAND = 8'h3e;
-    localparam E_ChopSticksStates_WINNER_OFFP2LHAND = 8'h3f;
-    localparam E_ChopSticksStates_WINNER_OFFP2RHAND = 8'h40;
-    localparam E_ChopSticksStates_WINNER_OFFP1LAVAIL = 8'h41;
-    localparam E_ChopSticksStates_WINNER_OFFP1RAVAIL = 8'h42;
-    localparam E_ChopSticksStates_WINNER_OFFP2LAVAIL = 8'h43;
-    localparam E_ChopSticksStates_WINNER_OFFP2RAVAIL = 8'h44;
-    localparam E_ChopSticksStates_WINNER_ONP1LAVAIL = 8'h45;
-    localparam E_ChopSticksStates_WINNER_ONP1RAVAIL = 8'h46;
-    localparam E_ChopSticksStates_WINNER_ONP2LAVAIL = 8'h47;
-    localparam E_ChopSticksStates_WINNER_ONP2RAVAIL = 8'h48;
-    localparam E_ChopSticksStates_RESET_TEMP4 = 8'h49;
-    localparam E_ChopSticksStates_RESET_TEMP3 = 8'h4a;
-    localparam E_ChopSticksStates_RESET_TEMP2 = 8'h4b;
-    localparam E_ChopSticksStates_RESET_TEMP1 = 8'h4c;
-    localparam E_ChopSticksStates_RESET_TURNSELECT = 8'h4d;
-    localparam E_ChopSticksStates_OWN_SELECTHANDTOHIT = 8'h4e;
-    localparam E_ChopSticksStates_OWN_BRANCHPLAYERONEP1L = 8'h4f;
-    localparam E_ChopSticksStates_OWN_BRANCHPLAYERONEP1R = 8'h50;
-    localparam E_ChopSticksStates_OWN_BRANCHPLAYERTWOP2L = 8'h51;
-    localparam E_ChopSticksStates_OWN_BRANCHPLAYERTWOP2R = 8'h52;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP1P1LADDR = 8'h53;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP1P1RADDR = 8'h54;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP1P2LADDR = 8'h55;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP1P2RADDR = 8'h56;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP2P1L = 8'h57;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP2P1R = 8'h58;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP2P2L = 8'h59;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP2P2R = 8'h5a;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP3P1L = 8'h5b;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP3P1R = 8'h5c;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP3P2L = 8'h5d;
-    localparam E_ChopSticksStates_OWN_UPDATETEMP3P2R = 8'h5e;
-    localparam E_ChopSticksStates_SPLIT_BRANCHPLAYER = 8'h5f;
-    localparam E_ChopSticksStates_SPLIT_BRANCHP1LAVAIL = 8'h60;
-    localparam E_ChopSticksStates_SPLIT_BRANCHP2LAVAIL = 8'h61;
-    localparam E_ChopSticksStates_SPLIT_DIVP1RSCORE = 8'h62;
-    localparam E_ChopSticksStates_SPLIT_UPDATEP1LSCORE = 8'h63;
-    localparam E_ChopSticksStates_SPLIT_UPDATEP1LAVAIL = 8'h64;
-    localparam E_ChopSticksStates_SPLIT_DIVP1LSCORE = 8'h65;
-    localparam E_ChopSticksStates_SPLIT_UPDATEP1RSCORE = 8'h66;
-    localparam E_ChopSticksStates_SPLIT_UPDATEP1RAVAIL = 8'h67;
-    localparam E_ChopSticksStates_SPLIT_DIVP2RSCORE = 8'h68;
-    localparam E_ChopSticksStates_SPLIT_UPDATEP2LSCORE = 8'h69;
-    localparam E_ChopSticksStates_SPLIT_UPDATEP2LAVAIL = 8'h6a;
-    localparam E_ChopSticksStates_SPLIT_DIVP2LSCORE = 8'h6b;
-    localparam E_ChopSticksStates_SPLIT_UPDATEP2RSCORE = 8'h6c;
-    localparam E_ChopSticksStates_SPLIT_UPDATEP2RAVAIL = 8'h6d;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHPLAYER = 8'h6e;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHP1LAVAIL = 8'h6f;
-    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT1 = 8'h70;
-    localparam E_ChopSticksStates_SPCHECK_UPDATET2P1LS = 8'h71;
-    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT2 = 8'h72;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHP1RAVAIL = 8'h73;
-    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT3 = 8'h74;
-    localparam E_ChopSticksStates_SPCHECK_UPDATET2P1RS = 8'h75;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHNOHANDS1 = 8'h76;
-    localparam E_ChopSticksStates_SPCHECK_CHECKHANDSCORE1 = 8'h77;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHVALIDHANDS1 = 8'h78;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHP2LAVAIL = 8'h79;
-    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT4 = 8'h7a;
-    localparam E_ChopSticksStates_SPCHECK_UPDATET2P2LS = 8'h7b;
-    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT5 = 8'h7c;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHP2RAVAIL = 8'h7d;
-    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT6 = 8'h7e;
-    localparam E_ChopSticksStates_SPCHECK_UPDATET2P2RS = 8'h7f;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHNOHANDS2 = 8'h80;
-    localparam E_ChopSticksStates_SPCHECK_CHECKHANDSCORE2 = 8'h81;
-    localparam E_ChopSticksStates_SPCHECK_BRANCHVALIDHANDS2 = 8'h82;
-    localparam E_ChopSticksStates_SPCHECK_P1SPLITVALID = 8'h83;
-    localparam E_ChopSticksStates_SPCHECK_P2SPLITVALID = 8'h84;
-    localparam E_ChopSticksStates_SPCHECK_INVALID = 8'h85;
+    localparam E_ChopSticksStates_TURNRANDOM = 8'h1;
+    localparam E_ChopSticksStates_OPTIONSELECT = 8'h2;
+    localparam E_ChopSticksStates_SELECTOPPHANDTOHIT = 8'h3;
+    localparam E_ChopSticksStates_OPP_BRANCHPLAYERONEP1L = 8'h4;
+    localparam E_ChopSticksStates_OPP_BRANCHPLAYERONEP1R = 8'h5;
+    localparam E_ChopSticksStates_OPP_BRANCHPLAYERTWOP2L = 8'h6;
+    localparam E_ChopSticksStates_OPP_BRANCHPLAYERTWOP2R = 8'h7;
+    localparam E_ChopSticksStates_OPP_UPDATETEMP1P1LADDR = 8'h8;
+    localparam E_ChopSticksStates_OPP_UPDATETEMP1P1RADDR = 8'h9;
+    localparam E_ChopSticksStates_OPP_UPDATETEMP1P2LADDR = 8'ha;
+    localparam E_ChopSticksStates_OPP_UPDATETEMP1P2RADDR = 8'hb;
+    localparam E_ChopSticksStates_OPP_UPDATETEMP2P1L = 8'hc;
+    localparam E_ChopSticksStates_OPP_UPDATETEMP2P1R = 8'hd;
+    localparam E_ChopSticksStates_OPP_UPDATETEMP2P2L = 8'he;
+    localparam E_ChopSticksStates_OPP_UPDATETEMP2P2R = 8'hf;
+    localparam E_ChopSticksStates_SEL_OWN_HANDTOHIT = 8'h10;
+    localparam E_ChopSticksStates_SEL_OWN_BRANCHPLAYERONEP1L = 8'h11;
+    localparam E_ChopSticksStates_SEL_OWN_BRANCHPLAYERONEP1R = 8'h12;
+    localparam E_ChopSticksStates_SEL_OWN_BRANCHPLAYERTWOP2L = 8'h13;
+    localparam E_ChopSticksStates_SEL_OWN_BRANCHPLAYERTWOP2R = 8'h14;
+    localparam E_ChopSticksStates_SEL_OWN_UPDATETEMP3P1L = 8'h15;
+    localparam E_ChopSticksStates_SEL_OWN_UPDATETEMP3P1R = 8'h16;
+    localparam E_ChopSticksStates_SEL_OWN_UPDATETEMP3P2L = 8'h17;
+    localparam E_ChopSticksStates_SEL_OWN_UPDATETEMP3P2R = 8'h18;
+    localparam E_ChopSticksStates_ATCHECK_CHECKTEMP2 = 8'h19;
+    localparam E_ChopSticksStates_ATCHECK_BRANCHTEMP4TOTEMP3 = 8'h1a;
+    localparam E_ChopSticksStates_ATCHECK_BRANCHTEMP4TOLEGAL = 8'h1b;
+    localparam E_ChopSticksStates_ATCHECK_CHECKTEMP3 = 8'h1c;
+    localparam E_ChopSticksStates_ATCHECK_LEGAL = 8'h1d;
+    localparam E_ChopSticksStates_ATCHECK_ILLEGAL = 8'h1e;
+    localparam E_ChopSticksStates_ATK_CALC_RESULT = 8'h1f;
+    localparam E_ChopSticksStates_ATK_CHECK_ATTACKEDHAND_P1L = 8'h20;
+    localparam E_ChopSticksStates_ATK_BRANCH_P1L = 8'h21;
+    localparam E_ChopSticksStates_ATK_P1L_5ORLESS = 8'h22;
+    localparam E_ChopSticksStates_ATK_REMOVE_P1LAVAIL = 8'h23;
+    localparam E_ChopSticksStates_ATK_P1L_DEAD_OR_ALIVE = 8'h24;
+    localparam E_ChopSticksStates_ATK_CHECK_ATTACKEDHAND_P1R = 8'h25;
+    localparam E_ChopSticksStates_ATK_BRANCH_P1R = 8'h26;
+    localparam E_ChopSticksStates_ATK_P1R_5ORLESS = 8'h27;
+    localparam E_ChopSticksStates_ATK_REMOVE_P1RAVAIL = 8'h28;
+    localparam E_ChopSticksStates_ATK_P1R_DEAD_OR_ALIVE = 8'h29;
+    localparam E_ChopSticksStates_ATK_CHECK_ATTACKEDHAND_P2L = 8'h2a;
+    localparam E_ChopSticksStates_ATK_BRANCH_P2L = 8'h2b;
+    localparam E_ChopSticksStates_ATK_P2L_5ORLESS = 8'h2c;
+    localparam E_ChopSticksStates_ATK_REMOVE_P2LAVAIL = 8'h2d;
+    localparam E_ChopSticksStates_ATK_P2L_DEAD_OR_ALIVE = 8'h2e;
+    localparam E_ChopSticksStates_ATK_P2R_5ORLESS = 8'h2f;
+    localparam E_ChopSticksStates_ATK_REMOVE_P2RAVAIL = 8'h30;
+    localparam E_ChopSticksStates_ATK_P2R_DEAD_OR_ALIVE = 8'h31;
+    localparam E_ChopSticksStates_BRANCHP1LAVAIL = 8'h32;
+    localparam E_ChopSticksStates_ILL_PENALTYBRANCH = 8'h33;
+    localparam E_ChopSticksStates_ILL_P1RPENALTY = 8'h34;
+    localparam E_ChopSticksStates_ILL_P2RPENALTY = 8'h35;
+    localparam E_ChopSticksStates_WINNER_BRANCHP1LAVAIL = 8'h36;
+    localparam E_ChopSticksStates_WINNER_BRANCHP1RAVAIL = 8'h37;
+    localparam E_ChopSticksStates_WINNER_BRANCHP2LAVAIL = 8'h38;
+    localparam E_ChopSticksStates_WINNER_BRANCHP2RAVAIL = 8'h39;
+    localparam E_ChopSticksStates_WINNER_BRANCHTEMP1 = 8'h3a;
+    localparam E_ChopSticksStates_WINNER_BRANCHTEMP2 = 8'h3b;
+    localparam E_ChopSticksStates_WINNER_LIGHTP1RHAND = 8'h3c;
+    localparam E_ChopSticksStates_WINNER_LIGHTP2RHAND = 8'h3d;
+    localparam E_ChopSticksStates_WINNER_OFFP1LHAND = 8'h3e;
+    localparam E_ChopSticksStates_WINNER_OFFP1RHAND = 8'h3f;
+    localparam E_ChopSticksStates_WINNER_OFFP2LHAND = 8'h40;
+    localparam E_ChopSticksStates_WINNER_OFFP2RHAND = 8'h41;
+    localparam E_ChopSticksStates_WINNER_OFFP1LAVAIL = 8'h42;
+    localparam E_ChopSticksStates_WINNER_OFFP1RAVAIL = 8'h43;
+    localparam E_ChopSticksStates_WINNER_OFFP2LAVAIL = 8'h44;
+    localparam E_ChopSticksStates_WINNER_OFFP2RAVAIL = 8'h45;
+    localparam E_ChopSticksStates_WINNER_ONP1LAVAIL = 8'h46;
+    localparam E_ChopSticksStates_WINNER_ONP1RAVAIL = 8'h47;
+    localparam E_ChopSticksStates_WINNER_ONP2LAVAIL = 8'h48;
+    localparam E_ChopSticksStates_WINNER_ONP2RAVAIL = 8'h49;
+    localparam E_ChopSticksStates_RESET_TEMP4 = 8'h4a;
+    localparam E_ChopSticksStates_RESET_TEMP3 = 8'h4b;
+    localparam E_ChopSticksStates_RESET_TEMP2 = 8'h4c;
+    localparam E_ChopSticksStates_RESET_TEMP1 = 8'h4d;
+    localparam E_ChopSticksStates_RESET_TURNSELECT = 8'h4e;
+    localparam E_ChopSticksStates_OWN_SELECTHANDTOHIT = 8'h4f;
+    localparam E_ChopSticksStates_OWN_BRANCHPLAYERONEP1L = 8'h50;
+    localparam E_ChopSticksStates_OWN_BRANCHPLAYERONEP1R = 8'h51;
+    localparam E_ChopSticksStates_OWN_BRANCHPLAYERTWOP2L = 8'h52;
+    localparam E_ChopSticksStates_OWN_BRANCHPLAYERTWOP2R = 8'h53;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP1P1LADDR = 8'h54;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP1P1RADDR = 8'h55;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP1P2LADDR = 8'h56;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP1P2RADDR = 8'h57;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP2P1L = 8'h58;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP2P1R = 8'h59;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP2P2L = 8'h5a;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP2P2R = 8'h5b;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP3P1L = 8'h5c;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP3P1R = 8'h5d;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP3P2L = 8'h5e;
+    localparam E_ChopSticksStates_OWN_UPDATETEMP3P2R = 8'h5f;
+    localparam E_ChopSticksStates_SPLIT_BRANCHPLAYER = 8'h60;
+    localparam E_ChopSticksStates_SPLIT_BRANCHP1LAVAIL = 8'h61;
+    localparam E_ChopSticksStates_SPLIT_BRANCHP2LAVAIL = 8'h62;
+    localparam E_ChopSticksStates_SPLIT_DIVP1RSCORE = 8'h63;
+    localparam E_ChopSticksStates_SPLIT_UPDATEP1LSCORE = 8'h64;
+    localparam E_ChopSticksStates_SPLIT_UPDATEP1LAVAIL = 8'h65;
+    localparam E_ChopSticksStates_SPLIT_DIVP1LSCORE = 8'h66;
+    localparam E_ChopSticksStates_SPLIT_UPDATEP1RSCORE = 8'h67;
+    localparam E_ChopSticksStates_SPLIT_UPDATEP1RAVAIL = 8'h68;
+    localparam E_ChopSticksStates_SPLIT_DIVP2RSCORE = 8'h69;
+    localparam E_ChopSticksStates_SPLIT_UPDATEP2LSCORE = 8'h6a;
+    localparam E_ChopSticksStates_SPLIT_UPDATEP2LAVAIL = 8'h6b;
+    localparam E_ChopSticksStates_SPLIT_DIVP2LSCORE = 8'h6c;
+    localparam E_ChopSticksStates_SPLIT_UPDATEP2RSCORE = 8'h6d;
+    localparam E_ChopSticksStates_SPLIT_UPDATEP2RAVAIL = 8'h6e;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHPLAYER = 8'h6f;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHP1LAVAIL = 8'h70;
+    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT1 = 8'h71;
+    localparam E_ChopSticksStates_SPCHECK_UPDATET2P1LS = 8'h72;
+    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT2 = 8'h73;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHP1RAVAIL = 8'h74;
+    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT3 = 8'h75;
+    localparam E_ChopSticksStates_SPCHECK_UPDATET2P1RS = 8'h76;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHNOHANDS1 = 8'h77;
+    localparam E_ChopSticksStates_SPCHECK_CHECKHANDSCORE1 = 8'h78;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHVALIDHANDS1 = 8'h79;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHP2LAVAIL = 8'h7a;
+    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT4 = 8'h7b;
+    localparam E_ChopSticksStates_SPCHECK_UPDATET2P2LS = 8'h7c;
+    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT5 = 8'h7d;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHP2RAVAIL = 8'h7e;
+    localparam E_ChopSticksStates_SPCHECK_EVALUATEHANDCOUNT6 = 8'h7f;
+    localparam E_ChopSticksStates_SPCHECK_UPDATET2P2RS = 8'h80;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHNOHANDS2 = 8'h81;
+    localparam E_ChopSticksStates_SPCHECK_CHECKHANDSCORE2 = 8'h82;
+    localparam E_ChopSticksStates_SPCHECK_BRANCHVALIDHANDS2 = 8'h83;
+    localparam E_ChopSticksStates_OPP_TIMER_CHECKTIMER = 8'h84;
+    localparam E_ChopSticksStates_OPP_TIMER_BRANCHTIMER = 8'h85;
+    localparam E_ChopSticksStates_OPP_TIMER_DECREASETIMER = 8'h86;
     logic slowclock;
-    localparam _MP_RISE_2110863570 = 1'h1;
-    localparam _MP_FALL_2110863570 = 1'h0;
+    localparam _MP_RISE_1078320298 = 1'h1;
+    localparam _MP_FALL_1078320298 = 1'h0;
     logic M_slow_clock_edge_in;
     logic M_slow_clock_edge_out;
     
     edge_detector #(
-        .RISE(_MP_RISE_2110863570),
-        .FALL(_MP_FALL_2110863570)
+        .RISE(_MP_RISE_1078320298),
+        .FALL(_MP_FALL_1078320298)
     ) slow_clock_edge (
         .clk(clk),
         .in(M_slow_clock_edge_in),
@@ -178,11 +183,17 @@ module chopsticks_fsm (
     
     logic [7:0] D_game_fsm_d, D_game_fsm_q = 8'h0;
     logic D_slow_clock_enable_d, D_slow_clock_enable_q = 1'h0;
+    logic D_diff_d, D_diff_q = 1'h0;
+    logic D_pulse_sig_d, D_pulse_sig_q = 1'h0;
     always @* begin
+        D_diff_d = D_diff_q;
+        D_pulse_sig_d = D_pulse_sig_q;
         D_slow_clock_enable_d = D_slow_clock_enable_q;
         D_game_fsm_d = D_game_fsm_q;
         
-        slowclock = decrease_timer;
+        D_diff_d = D_diff_q;
+        D_pulse_sig_d = D_pulse_sig_q;
+        slowclock = slowclk;
         alufn = 1'h0;
         asel = 1'h0;
         bsel = 1'h0;
@@ -192,6 +203,8 @@ module chopsticks_fsm (
         regfile_ra1 = 1'h0;
         regfile_ra2 = 1'h0;
         debug = regfile_rd2[2'h3:1'h0];
+        difficulty = D_diff_q;
+        pulse = D_pulse_sig_q;
         M_slow_clock_edge_in = slowclock;
         D_slow_clock_enable_d = D_slow_clock_enable_q;
         
@@ -205,11 +218,6 @@ module chopsticks_fsm (
         endcase
         D_game_fsm_d = D_game_fsm_q;
         if (rst) begin
-            alufn = 6'h1a;
-            asel = 2'h2;
-            wdsel = 1'h0;
-            regfile_wa = 4'h8;
-            regfile_we = 1'h1;
             D_game_fsm_d = 8'h0;
         end else begin
             
@@ -217,122 +225,105 @@ module chopsticks_fsm (
                 8'h0: begin
                     if (~D_slow_clock_enable_q) begin
                         D_slow_clock_enable_d = 1'h1;
-                        if (rng) begin
-                            alufn = 6'h1c;
-                            bsel = 2'h2;
-                            wdsel = 1'h0;
-                            regfile_wa = 4'hd;
-                            regfile_we = 1'h1;
-                            D_game_fsm_d = 8'h1;
-                        end else begin
-                            alufn = 6'h1c;
-                            bsel = 2'h1;
-                            wdsel = 1'h0;
-                            regfile_wa = 4'hd;
-                            regfile_we = 1'h1;
-                            D_game_fsm_d = 8'h1;
-                        end
+                    end
+                    if (blackoutrate & ~D_diff_q) begin
+                        D_diff_d = 1'h1;
+                    end
+                    if (blackoutrate & D_diff_q) begin
+                        D_diff_d = 1'h0;
+                    end
+                    D_pulse_sig_d = 1'h0;
+                    if (start) begin
+                        D_game_fsm_d = 8'h1;
                     end
                 end
                 8'h1: begin
-                    regfile_ra2 = 4'hd;
-                    if ((p1l_button && ~regfile_rd2[1'h0] && D_slow_clock_enable_q) | (p2l_button && regfile_rd2[1'h0] && D_slow_clock_enable_q)) begin
+                    if (rng) begin
+                        alufn = 6'h1c;
+                        bsel = 2'h2;
+                        wdsel = 1'h0;
+                        regfile_wa = 4'hd;
+                        regfile_we = 1'h1;
+                    end else begin
                         alufn = 6'h1c;
                         bsel = 2'h1;
                         wdsel = 1'h0;
-                        regfile_wa = 4'h8;
+                        regfile_wa = 4'hd;
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h2;
-                    end else begin
-                        if ((p1r_button && ~regfile_rd2[1'h0] && D_slow_clock_enable_q) | (p2r_button && regfile_rd2[1'h0] && D_slow_clock_enable_q)) begin
-                            alufn = 6'h1c;
-                            bsel = 2'h1;
-                            wdsel = 1'h0;
-                            regfile_wa = 4'h8;
-                            regfile_we = 1'h1;
-                            D_game_fsm_d = 8'h4e;
-                        end else begin
-                            if ((p1split && ~regfile_rd2[1'h0] && D_slow_clock_enable_q) | (p2split && regfile_rd2[1'h0] && D_slow_clock_enable_q)) begin
-                                D_game_fsm_d = 8'h6e;
-                            end else begin
-                                D_game_fsm_d = 8'h1;
-                            end
-                        end
                     end
+                    D_game_fsm_d = 8'h2;
                 end
                 8'h2: begin
-                    if (p1l_button && ~p1r_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split) begin
+                    D_pulse_sig_d = 1'h0;
+                    regfile_ra2 = 4'hd;
+                    if ((p1l_button && ~regfile_rd2[1'h0] && D_slow_clock_enable_q) | (p2l_button && regfile_rd2[1'h0] && D_slow_clock_enable_q)) begin
                         D_game_fsm_d = 8'h3;
                     end else begin
-                        if (p1r_button && ~p1l_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split) begin
-                            D_game_fsm_d = 8'h4;
+                        if ((p1r_button && ~regfile_rd2[1'h0] && D_slow_clock_enable_q) | (p2r_button && regfile_rd2[1'h0] && D_slow_clock_enable_q)) begin
+                            D_game_fsm_d = 8'h4f;
                         end else begin
-                            if (p2l_button && ~p1r_button && ~p1l_button && ~p2r_button && ~p1split && ~p2split) begin
-                                D_game_fsm_d = 8'h5;
+                            if ((p1split && ~regfile_rd2[1'h0] && D_slow_clock_enable_q) | (p2split && regfile_rd2[1'h0] && D_slow_clock_enable_q)) begin
+                                D_game_fsm_d = 8'h6f;
                             end else begin
-                                if (p2r_button && ~p1r_button && ~p2l_button && ~p1r_button && ~p1split && ~p2split) begin
-                                    D_game_fsm_d = 8'h6;
-                                end else begin
-                                    D_game_fsm_d = 8'h2;
-                                end
+                                D_game_fsm_d = 8'h2;
                             end
                         end
                     end
                 end
                 8'h3: begin
-                    regfile_ra2 = 4'hd;
-                    if (~regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'ha;
+                    if (p1l_button && ~p1r_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split) begin
+                        D_game_fsm_d = 8'h4;
                     end else begin
-                        D_game_fsm_d = 8'h2;
+                        if (p1r_button && ~p1l_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split) begin
+                            D_game_fsm_d = 8'h5;
+                        end else begin
+                            if (p2l_button && ~p1r_button && ~p1l_button && ~p2r_button && ~p1split && ~p2split) begin
+                                D_game_fsm_d = 8'h6;
+                            end else begin
+                                if (p2r_button && ~p1r_button && ~p2l_button && ~p1r_button && ~p1split && ~p2split) begin
+                                    D_game_fsm_d = 8'h7;
+                                end else begin
+                                    D_game_fsm_d = 8'h3;
+                                end
+                            end
+                        end
                     end
                 end
                 8'h4: begin
                     regfile_ra2 = 4'hd;
                     if (~regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h9;
+                        D_game_fsm_d = 8'hb;
                     end else begin
-                        D_game_fsm_d = 8'h2;
+                        D_game_fsm_d = 8'h3;
                     end
                 end
                 8'h5: begin
                     regfile_ra2 = 4'hd;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h8;
+                    if (~regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'ha;
                     end else begin
-                        D_game_fsm_d = 8'h2;
+                        D_game_fsm_d = 8'h3;
                     end
                 end
                 8'h6: begin
                     regfile_ra2 = 4'hd;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h7;
+                        D_game_fsm_d = 8'h9;
                     end else begin
-                        D_game_fsm_d = 8'h2;
+                        D_game_fsm_d = 8'h3;
                     end
                 end
                 8'h7: begin
-                    alufn = 6'h1c;
-                    bsel = 2'h1;
-                    wdsel = 1'h0;
-                    regfile_wa = 4'h9;
-                    regfile_we = 1'h1;
-                    debug = 4'h0;
-                    D_game_fsm_d = 8'hb;
-                end
-                8'hb: begin
-                    alufn = 6'h1a;
-                    asel = 2'h0;
-                    wdsel = 1'h0;
-                    regfile_wa = 4'ha;
-                    regfile_we = 1'h1;
-                    regfile_ra1 = 1'h0;
-                    debug = 4'h0;
-                    D_game_fsm_d = 8'hf;
+                    regfile_ra2 = 4'hd;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h8;
+                    end else begin
+                        D_game_fsm_d = 8'h3;
+                    end
                 end
                 8'h8: begin
                     alufn = 6'h1c;
-                    bsel = 2'h2;
+                    bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 4'h9;
                     regfile_we = 1'h1;
@@ -345,13 +336,13 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'ha;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 1'h1;
+                    regfile_ra1 = 1'h0;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'hf;
+                    D_game_fsm_d = 8'h10;
                 end
                 8'h9: begin
                     alufn = 6'h1c;
-                    bsel = 2'h3;
+                    bsel = 2'h2;
                     wdsel = 1'h0;
                     regfile_wa = 4'h9;
                     regfile_we = 1'h1;
@@ -364,13 +355,13 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'ha;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 2'h2;
+                    regfile_ra1 = 1'h1;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'hf;
+                    D_game_fsm_d = 8'h10;
                 end
                 8'ha: begin
-                    alufn = 6'h1a;
-                    asel = 2'h1;
+                    alufn = 6'h1c;
+                    bsel = 2'h3;
                     wdsel = 1'h0;
                     regfile_wa = 4'h9;
                     regfile_we = 1'h1;
@@ -383,35 +374,46 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'ha;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 2'h3;
+                    regfile_ra1 = 2'h2;
+                    debug = 4'h0;
+                    D_game_fsm_d = 8'h10;
+                end
+                8'hb: begin
+                    alufn = 6'h1a;
+                    asel = 2'h1;
+                    wdsel = 1'h0;
+                    regfile_wa = 4'h9;
+                    regfile_we = 1'h1;
                     debug = 4'h0;
                     D_game_fsm_d = 8'hf;
                 end
                 8'hf: begin
+                    alufn = 6'h1a;
+                    asel = 2'h0;
+                    wdsel = 1'h0;
+                    regfile_wa = 4'ha;
+                    regfile_we = 1'h1;
+                    regfile_ra1 = 2'h3;
+                    debug = 4'h0;
+                    D_game_fsm_d = 8'h10;
+                end
+                8'h10: begin
                     if (p1l_button && ~p1r_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split) begin
-                        D_game_fsm_d = 8'h10;
+                        D_game_fsm_d = 8'h11;
                     end else begin
                         if (p1r_button && ~p1l_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split) begin
-                            D_game_fsm_d = 8'h11;
+                            D_game_fsm_d = 8'h12;
                         end else begin
                             if (p2l_button && ~p1r_button && ~p1l_button && ~p2r_button && ~p1split && ~p2split) begin
-                                D_game_fsm_d = 8'h12;
+                                D_game_fsm_d = 8'h13;
                             end else begin
                                 if (p2r_button && ~p1r_button && ~p2l_button && ~p1r_button && ~p1split && ~p2split) begin
-                                    D_game_fsm_d = 8'h13;
+                                    D_game_fsm_d = 8'h14;
                                 end else begin
-                                    D_game_fsm_d = 8'hf;
+                                    D_game_fsm_d = 8'h10;
                                 end
                             end
                         end
-                    end
-                end
-                8'h10: begin
-                    regfile_ra2 = 4'hd;
-                    if (~regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h14;
-                    end else begin
-                        D_game_fsm_d = 8'hf;
                     end
                 end
                 8'h11: begin
@@ -419,15 +421,15 @@ module chopsticks_fsm (
                     if (~regfile_rd2[1'h0]) begin
                         D_game_fsm_d = 8'h15;
                     end else begin
-                        D_game_fsm_d = 8'hf;
+                        D_game_fsm_d = 8'h10;
                     end
                 end
                 8'h12: begin
                     regfile_ra2 = 4'hd;
-                    if (regfile_rd2[1'h0]) begin
+                    if (~regfile_rd2[1'h0]) begin
                         D_game_fsm_d = 8'h16;
                     end else begin
-                        D_game_fsm_d = 8'hf;
+                        D_game_fsm_d = 8'h10;
                     end
                 end
                 8'h13: begin
@@ -435,18 +437,16 @@ module chopsticks_fsm (
                     if (regfile_rd2[1'h0]) begin
                         D_game_fsm_d = 8'h17;
                     end else begin
-                        D_game_fsm_d = 8'hf;
+                        D_game_fsm_d = 8'h10;
                     end
                 end
                 8'h14: begin
-                    alufn = 6'h1a;
-                    asel = 2'h0;
-                    wdsel = 1'h0;
-                    regfile_wa = 4'hb;
-                    regfile_we = 1'h1;
-                    regfile_ra1 = 1'h0;
-                    debug = 4'h0;
-                    D_game_fsm_d = 8'h18;
+                    regfile_ra2 = 4'hd;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h18;
+                    end else begin
+                        D_game_fsm_d = 8'h10;
+                    end
                 end
                 8'h15: begin
                     alufn = 6'h1a;
@@ -454,9 +454,9 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'hb;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 1'h1;
+                    regfile_ra1 = 1'h0;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h18;
+                    D_game_fsm_d = 8'h19;
                 end
                 8'h16: begin
                     alufn = 6'h1a;
@@ -464,9 +464,9 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'hb;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 2'h2;
+                    regfile_ra1 = 1'h1;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h18;
+                    D_game_fsm_d = 8'h19;
                 end
                 8'h17: begin
                     alufn = 6'h1a;
@@ -474,35 +474,37 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'hb;
                     regfile_we = 1'h1;
+                    regfile_ra1 = 2'h2;
+                    debug = 4'h0;
+                    D_game_fsm_d = 8'h19;
+                end
+                8'h18: begin
+                    alufn = 6'h1a;
+                    asel = 2'h0;
+                    wdsel = 1'h0;
+                    regfile_wa = 4'hb;
+                    regfile_we = 1'h1;
                     regfile_ra1 = 2'h3;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h18;
+                    D_game_fsm_d = 8'h19;
                 end
-                8'h4e: begin
+                8'h4f: begin
                     if (p1l_button && ~p1r_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split) begin
-                        D_game_fsm_d = 8'h4f;
+                        D_game_fsm_d = 8'h50;
                     end else begin
                         if (p1r_button && ~p1l_button && ~p2l_button && ~p2r_button && ~p1split && ~p2split) begin
-                            D_game_fsm_d = 8'h50;
+                            D_game_fsm_d = 8'h51;
                         end else begin
                             if (p2l_button && ~p1r_button && ~p1l_button && ~p2r_button && ~p1split && ~p2split) begin
-                                D_game_fsm_d = 8'h51;
+                                D_game_fsm_d = 8'h52;
                             end else begin
                                 if (p2r_button && ~p1r_button && ~p2l_button && ~p1r_button && ~p1split && ~p2split) begin
-                                    D_game_fsm_d = 8'h52;
+                                    D_game_fsm_d = 8'h53;
                                 end else begin
-                                    D_game_fsm_d = 8'h4e;
+                                    D_game_fsm_d = 8'h4f;
                                 end
                             end
                         end
-                    end
-                end
-                8'h4f: begin
-                    regfile_ra2 = 4'hd;
-                    if (~regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h53;
-                    end else begin
-                        D_game_fsm_d = 8'h4e;
                     end
                 end
                 8'h50: begin
@@ -510,15 +512,15 @@ module chopsticks_fsm (
                     if (~regfile_rd2[1'h0]) begin
                         D_game_fsm_d = 8'h54;
                     end else begin
-                        D_game_fsm_d = 8'h4e;
+                        D_game_fsm_d = 8'h4f;
                     end
                 end
                 8'h51: begin
                     regfile_ra2 = 4'hd;
-                    if (regfile_rd2[1'h0]) begin
+                    if (~regfile_rd2[1'h0]) begin
                         D_game_fsm_d = 8'h55;
                     end else begin
-                        D_game_fsm_d = 8'h4e;
+                        D_game_fsm_d = 8'h4f;
                     end
                 end
                 8'h52: begin
@@ -526,41 +528,20 @@ module chopsticks_fsm (
                     if (regfile_rd2[1'h0]) begin
                         D_game_fsm_d = 8'h56;
                     end else begin
-                        D_game_fsm_d = 8'h4e;
+                        D_game_fsm_d = 8'h4f;
                     end
                 end
                 8'h53: begin
-                    alufn = 6'h1c;
-                    bsel = 2'h1;
-                    wdsel = 1'h0;
-                    regfile_wa = 4'h9;
-                    regfile_we = 1'h1;
-                    debug = 4'h0;
-                    D_game_fsm_d = 8'h57;
-                end
-                8'h57: begin
-                    alufn = 6'h1a;
-                    asel = 2'h0;
-                    wdsel = 1'h0;
-                    regfile_wa = 4'ha;
-                    regfile_we = 1'h1;
-                    regfile_ra1 = 1'h0;
-                    debug = 4'h0;
-                    D_game_fsm_d = 8'h5c;
-                end
-                8'h5c: begin
-                    alufn = 6'h1a;
-                    asel = 2'h0;
-                    wdsel = 1'h0;
-                    regfile_wa = 4'hb;
-                    regfile_we = 1'h1;
-                    regfile_ra1 = 1'h1;
-                    debug = 4'h0;
-                    D_game_fsm_d = 8'h18;
+                    regfile_ra2 = 4'hd;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h57;
+                    end else begin
+                        D_game_fsm_d = 8'h4f;
+                    end
                 end
                 8'h54: begin
                     alufn = 6'h1c;
-                    bsel = 2'h2;
+                    bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 4'h9;
                     regfile_we = 1'h1;
@@ -573,23 +554,23 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'ha;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 1'h1;
+                    regfile_ra1 = 1'h0;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h5b;
+                    D_game_fsm_d = 8'h5d;
                 end
-                8'h5b: begin
+                8'h5d: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     wdsel = 1'h0;
                     regfile_wa = 4'hb;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 1'h0;
+                    regfile_ra1 = 1'h1;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h18;
+                    D_game_fsm_d = 8'h19;
                 end
                 8'h55: begin
                     alufn = 6'h1c;
-                    bsel = 2'h3;
+                    bsel = 2'h2;
                     wdsel = 1'h0;
                     regfile_wa = 4'h9;
                     regfile_we = 1'h1;
@@ -602,23 +583,23 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'ha;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 2'h2;
+                    regfile_ra1 = 1'h1;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h5e;
+                    D_game_fsm_d = 8'h5c;
                 end
-                8'h5e: begin
+                8'h5c: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     wdsel = 1'h0;
                     regfile_wa = 4'hb;
                     regfile_we = 1'h1;
-                    regfile_ra1 = 2'h3;
+                    regfile_ra1 = 1'h0;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h18;
+                    D_game_fsm_d = 8'h19;
                 end
                 8'h56: begin
-                    alufn = 6'h1a;
-                    asel = 2'h1;
+                    alufn = 6'h1c;
+                    bsel = 2'h3;
                     wdsel = 1'h0;
                     regfile_wa = 4'h9;
                     regfile_we = 1'h1;
@@ -631,11 +612,40 @@ module chopsticks_fsm (
                     wdsel = 1'h0;
                     regfile_wa = 4'ha;
                     regfile_we = 1'h1;
+                    regfile_ra1 = 2'h2;
+                    debug = 4'h0;
+                    D_game_fsm_d = 8'h5f;
+                end
+                8'h5f: begin
+                    alufn = 6'h1a;
+                    asel = 2'h0;
+                    wdsel = 1'h0;
+                    regfile_wa = 4'hb;
+                    regfile_we = 1'h1;
                     regfile_ra1 = 2'h3;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h5d;
+                    D_game_fsm_d = 8'h19;
                 end
-                8'h5d: begin
+                8'h57: begin
+                    alufn = 6'h1a;
+                    asel = 2'h1;
+                    wdsel = 1'h0;
+                    regfile_wa = 4'h9;
+                    regfile_we = 1'h1;
+                    debug = 4'h0;
+                    D_game_fsm_d = 8'h5b;
+                end
+                8'h5b: begin
+                    alufn = 6'h1a;
+                    asel = 2'h0;
+                    wdsel = 1'h0;
+                    regfile_wa = 4'ha;
+                    regfile_we = 1'h1;
+                    regfile_ra1 = 2'h3;
+                    debug = 4'h0;
+                    D_game_fsm_d = 8'h5e;
+                end
+                8'h5e: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     wdsel = 1'h0;
@@ -643,25 +653,25 @@ module chopsticks_fsm (
                     regfile_we = 1'h1;
                     regfile_ra1 = 2'h2;
                     debug = 4'h0;
-                    D_game_fsm_d = 8'h18;
-                end
-                8'h60: begin
-                    regfile_ra2 = 3'h4;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h65;
-                    end else begin
-                        D_game_fsm_d = 8'h62;
-                    end
+                    D_game_fsm_d = 8'h19;
                 end
                 8'h61: begin
-                    regfile_ra2 = 3'h6;
+                    regfile_ra2 = 3'h4;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h6b;
+                        D_game_fsm_d = 8'h66;
                     end else begin
-                        D_game_fsm_d = 8'h68;
+                        D_game_fsm_d = 8'h63;
                     end
                 end
                 8'h62: begin
+                    regfile_ra2 = 3'h6;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h6c;
+                    end else begin
+                        D_game_fsm_d = 8'h69;
+                    end
+                end
+                8'h63: begin
                     alufn = 6'h3;
                     asel = 2'h0;
                     bsel = 2'h3;
@@ -670,52 +680,52 @@ module chopsticks_fsm (
                     regfile_we = 1'h1;
                     regfile_ra1 = 1'h1;
                     debug = 4'h1;
-                    D_game_fsm_d = 8'h63;
-                end
-                8'h65: begin
-                    alufn = 6'h3;
-                    asel = 2'h0;
-                    bsel = 2'h3;
-                    wdsel = 2'h0;
-                    regfile_wa = 1'h0;
-                    regfile_we = 1'h1;
-                    regfile_ra1 = 1'h0;
-                    debug = 4'h1;
-                    D_game_fsm_d = 8'h66;
-                end
-                8'h6b: begin
-                    alufn = 6'h3;
-                    asel = 2'h0;
-                    bsel = 2'h3;
-                    wdsel = 2'h0;
-                    regfile_wa = 2'h2;
-                    regfile_we = 1'h1;
-                    regfile_ra1 = 2'h2;
-                    debug = 4'h1;
-                    D_game_fsm_d = 8'h6c;
-                end
-                8'h68: begin
-                    alufn = 6'h3;
-                    asel = 2'h0;
-                    bsel = 2'h3;
-                    wdsel = 2'h0;
-                    regfile_wa = 2'h3;
-                    regfile_we = 1'h1;
-                    regfile_ra1 = 2'h3;
-                    debug = 4'h1;
-                    D_game_fsm_d = 8'h69;
-                end
-                8'h63: begin
-                    alufn = 6'h1a;
-                    asel = 2'h0;
-                    wdsel = 2'h0;
-                    regfile_wa = 1'h0;
-                    regfile_we = 1'h1;
-                    regfile_ra1 = 1'h1;
-                    debug = 4'h2;
                     D_game_fsm_d = 8'h64;
                 end
                 8'h66: begin
+                    alufn = 6'h3;
+                    asel = 2'h0;
+                    bsel = 2'h3;
+                    wdsel = 2'h0;
+                    regfile_wa = 1'h0;
+                    regfile_we = 1'h1;
+                    regfile_ra1 = 1'h0;
+                    debug = 4'h1;
+                    D_game_fsm_d = 8'h67;
+                end
+                8'h6c: begin
+                    alufn = 6'h3;
+                    asel = 2'h0;
+                    bsel = 2'h3;
+                    wdsel = 2'h0;
+                    regfile_wa = 2'h2;
+                    regfile_we = 1'h1;
+                    regfile_ra1 = 2'h2;
+                    debug = 4'h1;
+                    D_game_fsm_d = 8'h6d;
+                end
+                8'h69: begin
+                    alufn = 6'h3;
+                    asel = 2'h0;
+                    bsel = 2'h3;
+                    wdsel = 2'h0;
+                    regfile_wa = 2'h3;
+                    regfile_we = 1'h1;
+                    regfile_ra1 = 2'h3;
+                    debug = 4'h1;
+                    D_game_fsm_d = 8'h6a;
+                end
+                8'h64: begin
+                    alufn = 6'h1a;
+                    asel = 2'h0;
+                    wdsel = 2'h0;
+                    regfile_wa = 1'h0;
+                    regfile_we = 1'h1;
+                    regfile_ra1 = 1'h1;
+                    debug = 4'h2;
+                    D_game_fsm_d = 8'h65;
+                end
+                8'h67: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     wdsel = 2'h0;
@@ -723,9 +733,9 @@ module chopsticks_fsm (
                     regfile_we = 1'h1;
                     regfile_ra1 = 1'h0;
                     debug = 4'h2;
-                    D_game_fsm_d = 8'h67;
+                    D_game_fsm_d = 8'h68;
                 end
-                8'h69: begin
+                8'h6a: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     wdsel = 2'h0;
@@ -733,9 +743,9 @@ module chopsticks_fsm (
                     regfile_we = 1'h1;
                     regfile_ra1 = 2'h3;
                     debug = 4'h2;
-                    D_game_fsm_d = 8'h6a;
+                    D_game_fsm_d = 8'h6b;
                 end
-                8'h6c: begin
+                8'h6d: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     wdsel = 2'h0;
@@ -743,93 +753,93 @@ module chopsticks_fsm (
                     regfile_we = 1'h1;
                     regfile_ra1 = 2'h2;
                     debug = 4'h2;
-                    D_game_fsm_d = 8'h6d;
+                    D_game_fsm_d = 8'h6e;
                 end
-                8'h64: begin
+                8'h65: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     wdsel = 2'h0;
                     regfile_wa = 3'h4;
                     regfile_we = 1'h1;
                     debug = 4'h3;
-                    D_game_fsm_d = 8'h49;
+                    D_game_fsm_d = 8'h4a;
                 end
-                8'h67: begin
+                8'h68: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     wdsel = 2'h0;
                     regfile_wa = 3'h5;
                     regfile_we = 1'h1;
                     debug = 4'h3;
-                    D_game_fsm_d = 8'h49;
+                    D_game_fsm_d = 8'h4a;
                 end
-                8'h6a: begin
+                8'h6b: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     wdsel = 2'h0;
                     regfile_wa = 3'h6;
                     regfile_we = 1'h1;
                     debug = 4'h3;
-                    D_game_fsm_d = 8'h49;
+                    D_game_fsm_d = 8'h4a;
                 end
-                8'h6d: begin
+                8'h6e: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     wdsel = 2'h0;
                     regfile_wa = 3'h7;
                     regfile_we = 1'h1;
                     debug = 4'h3;
-                    D_game_fsm_d = 8'h49;
-                end
-                8'h6e: begin
-                    regfile_ra2 = 4'hd;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h79;
-                    end else begin
-                        D_game_fsm_d = 8'h6f;
-                    end
+                    D_game_fsm_d = 8'h4a;
                 end
                 8'h6f: begin
-                    regfile_ra2 = 3'h4;
+                    regfile_ra2 = 4'hd;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h70;
+                        D_game_fsm_d = 8'h7a;
                     end else begin
-                        D_game_fsm_d = 8'h72;
+                        D_game_fsm_d = 8'h70;
                     end
                 end
                 8'h70: begin
+                    regfile_ra2 = 3'h4;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h71;
+                    end else begin
+                        D_game_fsm_d = 8'h73;
+                    end
+                end
+                8'h71: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     regfile_we = 1'h1;
                     regfile_wa = 4'h9;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h71;
+                    D_game_fsm_d = 8'h72;
                 end
-                8'h71: begin
+                8'h72: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     regfile_ra1 = 4'h0;
                     regfile_we = 1'h1;
                     regfile_wa = 4'ha;
-                    D_game_fsm_d = 8'h73;
+                    D_game_fsm_d = 8'h74;
                 end
-                8'h72: begin
+                8'h73: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     regfile_we = 1'h1;
                     regfile_wa = 4'h9;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h73;
-                end
-                8'h73: begin
-                    regfile_ra2 = 3'h5;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h74;
-                    end else begin
-                        D_game_fsm_d = 8'h76;
-                    end
+                    D_game_fsm_d = 8'h74;
                 end
                 8'h74: begin
+                    regfile_ra2 = 3'h5;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h75;
+                    end else begin
+                        D_game_fsm_d = 8'h77;
+                    end
+                end
+                8'h75: begin
                     alufn = 6'h16;
                     asel = 2'h0;
                     bsel = 2'h2;
@@ -837,86 +847,86 @@ module chopsticks_fsm (
                     regfile_we = 1'h1;
                     regfile_wa = 4'h9;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h75;
+                    D_game_fsm_d = 8'h76;
                 end
-                8'h75: begin
+                8'h76: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     regfile_ra1 = 4'h1;
                     regfile_we = 1'h1;
                     regfile_wa = 4'ha;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h76;
-                end
-                8'h76: begin
-                    regfile_ra2 = 4'h9;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h77;
-                    end else begin
-                        D_game_fsm_d = 8'h32;
-                    end
+                    D_game_fsm_d = 8'h77;
                 end
                 8'h77: begin
+                    regfile_ra2 = 4'h9;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h78;
+                    end else begin
+                        D_game_fsm_d = 8'h33;
+                    end
+                end
+                8'h78: begin
                     alufn = 6'h37;
                     asel = 2'h0;
                     bsel = 2'h2;
                     regfile_ra1 = 4'ha;
                     regfile_wa = 4'ha;
                     wdsel = 2'h0;
-                    if (decrease_timer) begin
+                    if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h78;
-                    end
-                end
-                8'h78: begin
-                    regfile_ra2 = 4'ha;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h32;
-                    end else begin
-                        D_game_fsm_d = 8'h60;
+                        D_game_fsm_d = 8'h79;
                     end
                 end
                 8'h79: begin
-                    regfile_ra2 = 3'h6;
+                    regfile_ra2 = 4'ha;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h7a;
+                        D_game_fsm_d = 8'h33;
                     end else begin
-                        D_game_fsm_d = 8'h7c;
+                        D_game_fsm_d = 8'h61;
                     end
                 end
                 8'h7a: begin
+                    regfile_ra2 = 3'h6;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h7b;
+                    end else begin
+                        D_game_fsm_d = 8'h7d;
+                    end
+                end
+                8'h7b: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     regfile_we = 1'h1;
                     regfile_wa = 4'h9;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h7b;
+                    D_game_fsm_d = 8'h7c;
                 end
-                8'h7b: begin
+                8'h7c: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     regfile_ra1 = 4'h2;
                     regfile_we = 1'h1;
                     regfile_wa = 4'ha;
-                    D_game_fsm_d = 8'h7d;
+                    D_game_fsm_d = 8'h7e;
                 end
-                8'h7c: begin
+                8'h7d: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     regfile_we = 1'h1;
                     regfile_wa = 4'h9;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h7d;
-                end
-                8'h7d: begin
-                    regfile_ra2 = 3'h7;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h7e;
-                    end else begin
-                        D_game_fsm_d = 8'h80;
-                    end
+                    D_game_fsm_d = 8'h7e;
                 end
                 8'h7e: begin
+                    regfile_ra2 = 3'h7;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h7f;
+                    end else begin
+                        D_game_fsm_d = 8'h81;
+                    end
+                end
+                8'h7f: begin
                     alufn = 6'h16;
                     asel = 2'h0;
                     bsel = 2'h2;
@@ -924,46 +934,46 @@ module chopsticks_fsm (
                     regfile_we = 1'h1;
                     regfile_wa = 4'h9;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h7f;
+                    D_game_fsm_d = 8'h80;
                 end
-                8'h7f: begin
+                8'h80: begin
                     alufn = 6'h1a;
                     asel = 2'h0;
                     regfile_ra1 = 4'h3;
                     regfile_we = 1'h1;
                     regfile_wa = 4'ha;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h80;
-                end
-                8'h80: begin
-                    regfile_ra2 = 4'h9;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h81;
-                    end else begin
-                        D_game_fsm_d = 8'h32;
-                    end
+                    D_game_fsm_d = 8'h81;
                 end
                 8'h81: begin
+                    regfile_ra2 = 4'h9;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h82;
+                    end else begin
+                        D_game_fsm_d = 8'h33;
+                    end
+                end
+                8'h82: begin
                     alufn = 6'h37;
                     asel = 2'h0;
                     bsel = 2'h2;
                     regfile_ra1 = 4'ha;
                     regfile_wa = 4'ha;
                     wdsel = 2'h0;
-                    if (decrease_timer) begin
+                    if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h82;
+                        D_game_fsm_d = 8'h83;
                     end
                 end
-                8'h82: begin
+                8'h83: begin
                     regfile_ra2 = 4'ha;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h32;
+                        D_game_fsm_d = 8'h33;
                     end else begin
-                        D_game_fsm_d = 8'h61;
+                        D_game_fsm_d = 8'h62;
                     end
                 end
-                8'h18: begin
+                8'h19: begin
                     alufn = 6'h33;
                     asel = 2'h0;
                     bsel = 2'h1;
@@ -973,10 +983,10 @@ module chopsticks_fsm (
                     debug = 4'h0;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h19;
+                        D_game_fsm_d = 8'h1a;
                     end
                 end
-                8'h1b: begin
+                8'h1c: begin
                     alufn = 6'h33;
                     asel = 2'h0;
                     bsel = 2'h1;
@@ -986,42 +996,42 @@ module chopsticks_fsm (
                     debug = 4'h0;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h1a;
-                    end
-                end
-                8'h19: begin
-                    regfile_ra2 = 4'hc;
-                    if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h32;
-                    end else begin
                         D_game_fsm_d = 8'h1b;
                     end
                 end
                 8'h1a: begin
                     regfile_ra2 = 4'hc;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h32;
+                        D_game_fsm_d = 8'h33;
                     end else begin
-                        D_game_fsm_d = 8'h1e;
+                        D_game_fsm_d = 8'h1c;
                     end
                 end
-                8'h1c: begin
+                8'h1b: begin
+                    regfile_ra2 = 4'hc;
+                    if (regfile_rd2[1'h0]) begin
+                        D_game_fsm_d = 8'h33;
+                    end else begin
+                        D_game_fsm_d = 8'h1f;
+                    end
+                end
+                8'h1d: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     regfile_we = 1'h1;
                     regfile_wa = 4'hc;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h1;
+                    D_game_fsm_d = 8'h2;
                 end
-                8'h1d: begin
+                8'h1e: begin
                     alufn = 6'h1c;
                     bsel = 2'h3;
                     regfile_we = 1'h1;
                     regfile_wa = 4'hc;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h1;
+                    D_game_fsm_d = 8'h2;
                 end
-                8'h1e: begin
+                8'h1f: begin
                     alufn = 6'h0;
                     asel = 2'h0;
                     bsel = 2'h0;
@@ -1031,9 +1041,9 @@ module chopsticks_fsm (
                     regfile_ra1 = 4'ha;
                     regfile_ra2 = 4'hb;
                     debug = 4'h1;
-                    D_game_fsm_d = 8'h1f;
+                    D_game_fsm_d = 8'h20;
                 end
-                8'h1f: begin
+                8'h20: begin
                     alufn = 6'h33;
                     asel = 2'h0;
                     bsel = 2'h1;
@@ -1043,18 +1053,18 @@ module chopsticks_fsm (
                     debug = 4'h2;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h20;
+                        D_game_fsm_d = 8'h21;
                     end
                 end
-                8'h20: begin
+                8'h21: begin
                     regfile_ra2 = 4'hc;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h23;
-                    end else begin
                         D_game_fsm_d = 8'h24;
+                    end else begin
+                        D_game_fsm_d = 8'h25;
                     end
                 end
-                8'h23: begin
+                8'h24: begin
                     alufn = 6'h37;
                     asel = 2'h2;
                     bsel = 2'h0;
@@ -1064,10 +1074,10 @@ module chopsticks_fsm (
                     debug = 4'h3;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h21;
+                        D_game_fsm_d = 8'h22;
                     end
                 end
-                8'h21: begin
+                8'h22: begin
                     regfile_ra2 = 4'hc;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1076,7 +1086,7 @@ module chopsticks_fsm (
                         regfile_we = 1'h1;
                         regfile_wa = 1'h0;
                         debug = 4'h1;
-                        D_game_fsm_d = 8'h22;
+                        D_game_fsm_d = 8'h23;
                     end else begin
                         alufn = 6'h1a;
                         asel = 2'h0;
@@ -1086,19 +1096,19 @@ module chopsticks_fsm (
                         regfile_wa = 1'h0;
                         regfile_ra1 = 4'ha;
                         debug = 4'h4;
-                        D_game_fsm_d = 8'h35;
+                        D_game_fsm_d = 8'h36;
                     end
                 end
-                8'h22: begin
+                8'h23: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h4;
                     regfile_we = 1'h1;
                     debug = 4'hc;
-                    D_game_fsm_d = 8'h35;
+                    D_game_fsm_d = 8'h36;
                 end
-                8'h24: begin
+                8'h25: begin
                     alufn = 6'h33;
                     asel = 2'h0;
                     bsel = 2'h2;
@@ -1108,18 +1118,18 @@ module chopsticks_fsm (
                     debug = 4'h5;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h25;
+                        D_game_fsm_d = 8'h26;
                     end
                 end
-                8'h25: begin
+                8'h26: begin
                     regfile_ra2 = 4'hc;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h28;
-                    end else begin
                         D_game_fsm_d = 8'h29;
+                    end else begin
+                        D_game_fsm_d = 8'h2a;
                     end
                 end
-                8'h28: begin
+                8'h29: begin
                     alufn = 6'h37;
                     asel = 2'h2;
                     bsel = 2'h0;
@@ -1129,10 +1139,10 @@ module chopsticks_fsm (
                     debug = 4'h3;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h26;
+                        D_game_fsm_d = 8'h27;
                     end
                 end
-                8'h26: begin
+                8'h27: begin
                     regfile_ra2 = 4'hc;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1141,7 +1151,7 @@ module chopsticks_fsm (
                         regfile_we = 1'h1;
                         regfile_wa = 1'h1;
                         debug = 4'h0;
-                        D_game_fsm_d = 8'h27;
+                        D_game_fsm_d = 8'h28;
                     end else begin
                         alufn = 6'h1a;
                         asel = 2'h0;
@@ -1151,19 +1161,19 @@ module chopsticks_fsm (
                         regfile_wa = 1'h1;
                         regfile_ra1 = 4'ha;
                         debug = 4'h8;
-                        D_game_fsm_d = 8'h35;
+                        D_game_fsm_d = 8'h36;
                     end
                 end
-                8'h27: begin
+                8'h28: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h5;
                     regfile_we = 1'h1;
                     debug = 4'h8;
-                    D_game_fsm_d = 8'h35;
+                    D_game_fsm_d = 8'h36;
                 end
-                8'h29: begin
+                8'h2a: begin
                     alufn = 6'h33;
                     asel = 2'h0;
                     bsel = 2'h3;
@@ -1173,18 +1183,18 @@ module chopsticks_fsm (
                     debug = 4'hc;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h2a;
+                        D_game_fsm_d = 8'h2b;
                     end
                 end
-                8'h2a: begin
+                8'h2b: begin
                     regfile_ra2 = 4'hc;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h2d;
+                        D_game_fsm_d = 8'h2e;
                     end else begin
-                        D_game_fsm_d = 8'h30;
+                        D_game_fsm_d = 8'h31;
                     end
                 end
-                8'h2d: begin
+                8'h2e: begin
                     alufn = 6'h37;
                     asel = 2'h2;
                     bsel = 2'h0;
@@ -1194,10 +1204,10 @@ module chopsticks_fsm (
                     debug = 4'h3;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h2b;
+                        D_game_fsm_d = 8'h2c;
                     end
                 end
-                8'h2b: begin
+                8'h2c: begin
                     regfile_ra2 = 4'hc;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1206,7 +1216,7 @@ module chopsticks_fsm (
                         regfile_we = 1'h1;
                         regfile_wa = 2'h2;
                         debug = 4'h8;
-                        D_game_fsm_d = 8'h2c;
+                        D_game_fsm_d = 8'h2d;
                     end else begin
                         alufn = 6'h1a;
                         asel = 2'h0;
@@ -1216,19 +1226,19 @@ module chopsticks_fsm (
                         regfile_wa = 2'h2;
                         regfile_ra1 = 4'ha;
                         debug = 4'h8;
-                        D_game_fsm_d = 8'h35;
+                        D_game_fsm_d = 8'h36;
                     end
                 end
-                8'h2c: begin
+                8'h2d: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h6;
                     regfile_we = 1'h1;
                     debug = 4'h8;
-                    D_game_fsm_d = 8'h35;
+                    D_game_fsm_d = 8'h36;
                 end
-                8'h30: begin
+                8'h31: begin
                     alufn = 6'h37;
                     asel = 2'h2;
                     bsel = 2'h0;
@@ -1238,10 +1248,10 @@ module chopsticks_fsm (
                     debug = 4'h8;
                     if (M_slow_clock_edge_out) begin
                         regfile_we = 1'h1;
-                        D_game_fsm_d = 8'h2e;
+                        D_game_fsm_d = 8'h2f;
                     end
                 end
-                8'h2e: begin
+                8'h2f: begin
                     regfile_ra2 = 4'hc;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1250,7 +1260,7 @@ module chopsticks_fsm (
                         regfile_we = 1'h1;
                         regfile_wa = 2'h3;
                         debug = 4'h8;
-                        D_game_fsm_d = 8'h2f;
+                        D_game_fsm_d = 8'h30;
                     end else begin
                         alufn = 6'h1a;
                         asel = 2'h0;
@@ -1260,28 +1270,28 @@ module chopsticks_fsm (
                         regfile_wa = 2'h3;
                         regfile_ra1 = 4'ha;
                         debug = 4'h8;
-                        D_game_fsm_d = 8'h35;
+                        D_game_fsm_d = 8'h36;
                     end
                 end
-                8'h2f: begin
+                8'h30: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h7;
                     regfile_we = 1'h1;
                     debug = 4'h8;
-                    D_game_fsm_d = 8'h35;
+                    D_game_fsm_d = 8'h36;
                 end
-                8'h31: begin
+                8'h32: begin
                     alufn = 6'h1c;
                     asel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 4'hc;
                     regfile_we = 1'h1;
                     debug = 4'hf;
-                    D_game_fsm_d = 8'h1;
+                    D_game_fsm_d = 8'h2;
                 end
-                8'h32: begin
+                8'h33: begin
                     regfile_ra2 = 4'hd;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1290,7 +1300,7 @@ module chopsticks_fsm (
                         regfile_wa = 3'h6;
                         regfile_we = 1'h1;
                         debug = 4'h1;
-                        D_game_fsm_d = 8'h34;
+                        D_game_fsm_d = 8'h35;
                     end else begin
                         alufn = 6'h1c;
                         bsel = 2'h1;
@@ -1298,28 +1308,28 @@ module chopsticks_fsm (
                         regfile_wa = 3'h4;
                         regfile_we = 1'h1;
                         debug = 4'h1;
-                        D_game_fsm_d = 8'h33;
+                        D_game_fsm_d = 8'h34;
                     end
                 end
-                8'h33: begin
+                8'h34: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h5;
                     regfile_we = 1'h1;
                     debug = 4'h2;
-                    D_game_fsm_d = 8'h35;
+                    D_game_fsm_d = 8'h36;
                 end
-                8'h34: begin
+                8'h35: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h7;
                     regfile_we = 1'h1;
                     debug = 4'h2;
-                    D_game_fsm_d = 8'h35;
+                    D_game_fsm_d = 8'h36;
                 end
-                8'h35: begin
+                8'h36: begin
                     regfile_ra2 = 3'h4;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1328,7 +1338,7 @@ module chopsticks_fsm (
                         regfile_wa = 4'h9;
                         regfile_we = 1'h1;
                         debug = 4'h3;
-                        D_game_fsm_d = 8'h36;
+                        D_game_fsm_d = 8'h37;
                     end else begin
                         alufn = 6'h1c;
                         bsel = 2'h1;
@@ -1336,10 +1346,10 @@ module chopsticks_fsm (
                         regfile_wa = 4'h9;
                         regfile_we = 1'h1;
                         debug = 4'h3;
-                        D_game_fsm_d = 8'h36;
+                        D_game_fsm_d = 8'h37;
                     end
                 end
-                8'h36: begin
+                8'h37: begin
                     regfile_ra2 = 3'h5;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1348,12 +1358,12 @@ module chopsticks_fsm (
                         regfile_wa = 4'h9;
                         regfile_we = 1'h1;
                         debug = 4'h4;
-                        D_game_fsm_d = 8'h37;
+                        D_game_fsm_d = 8'h38;
                     end else begin
-                        D_game_fsm_d = 8'h37;
+                        D_game_fsm_d = 8'h38;
                     end
                 end
-                8'h37: begin
+                8'h38: begin
                     regfile_ra2 = 3'h6;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1362,7 +1372,7 @@ module chopsticks_fsm (
                         regfile_wa = 4'ha;
                         regfile_we = 1'h1;
                         debug = 4'h5;
-                        D_game_fsm_d = 8'h38;
+                        D_game_fsm_d = 8'h39;
                     end else begin
                         alufn = 6'h1c;
                         bsel = 2'h1;
@@ -1370,10 +1380,10 @@ module chopsticks_fsm (
                         regfile_wa = 4'ha;
                         regfile_we = 1'h1;
                         debug = 4'h5;
-                        D_game_fsm_d = 8'h38;
+                        D_game_fsm_d = 8'h39;
                     end
                 end
-                8'h38: begin
+                8'h39: begin
                     regfile_ra2 = 3'h7;
                     if (regfile_rd2[1'h0]) begin
                         alufn = 6'h1c;
@@ -1382,118 +1392,109 @@ module chopsticks_fsm (
                         regfile_wa = 4'ha;
                         regfile_we = 1'h1;
                         debug = 4'h6;
-                        D_game_fsm_d = 8'h39;
+                        D_game_fsm_d = 8'h3a;
                     end else begin
-                        D_game_fsm_d = 8'h39;
+                        D_game_fsm_d = 8'h3a;
                     end
                 end
-                8'h39: begin
+                8'h3a: begin
                     regfile_ra2 = 4'h9;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h3a;
+                        D_game_fsm_d = 8'h3b;
                     end else begin
                         wdsel = 1'h1;
                         regfile_wa = 2'h2;
                         regfile_we = 1'h1;
                         debug = 4'h7;
-                        D_game_fsm_d = 8'h3c;
+                        D_game_fsm_d = 8'h3d;
                     end
                 end
-                8'h3c: begin
+                8'h3d: begin
                     wdsel = 1'h1;
                     regfile_wa = 2'h3;
                     regfile_we = 1'h1;
                     debug = 4'h8;
-                    D_game_fsm_d = 8'h3d;
+                    D_game_fsm_d = 8'h3e;
                 end
-                8'h3a: begin
+                8'h3b: begin
                     regfile_ra2 = 4'ha;
                     if (regfile_rd2[1'h0]) begin
-                        D_game_fsm_d = 8'h49;
+                        D_game_fsm_d = 8'h4a;
                     end else begin
                         wdsel = 1'h1;
                         regfile_wa = 1'h0;
                         regfile_we = 1'h1;
                         debug = 4'h9;
-                        D_game_fsm_d = 8'h3b;
+                        D_game_fsm_d = 8'h3c;
                     end
                 end
-                8'h3b: begin
+                8'h3c: begin
                     wdsel = 1'h1;
                     regfile_wa = 1'h1;
                     regfile_we = 1'h1;
                     debug = 4'ha;
-                    D_game_fsm_d = 8'h3f;
+                    D_game_fsm_d = 8'h40;
                 end
-                8'h3d: begin
+                8'h3e: begin
                     wdsel = 2'h2;
                     regfile_wa = 1'h0;
                     regfile_we = 1'h1;
                     debug = 4'hb;
-                    D_game_fsm_d = 8'h3e;
+                    D_game_fsm_d = 8'h3f;
                 end
-                8'h3e: begin
+                8'h3f: begin
                     wdsel = 2'h2;
                     regfile_wa = 1'h1;
                     regfile_we = 1'h1;
                     debug = 4'hb;
-                    D_game_fsm_d = 8'h41;
+                    D_game_fsm_d = 8'h42;
                 end
-                8'h3f: begin
+                8'h40: begin
                     wdsel = 2'h2;
                     regfile_wa = 2'h2;
                     regfile_we = 1'h1;
                     debug = 4'hb;
-                    D_game_fsm_d = 8'h40;
+                    D_game_fsm_d = 8'h41;
                 end
-                8'h40: begin
+                8'h41: begin
                     wdsel = 2'h2;
                     regfile_wa = 2'h3;
                     regfile_we = 1'h1;
                     debug = 4'hb;
-                    D_game_fsm_d = 8'h43;
+                    D_game_fsm_d = 8'h44;
                 end
-                8'h41: begin
+                8'h42: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h4;
                     regfile_we = 1'h1;
                     debug = 4'h1;
-                    D_game_fsm_d = 8'h42;
+                    D_game_fsm_d = 8'h43;
                 end
-                8'h42: begin
+                8'h43: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h5;
                     regfile_we = 1'h1;
                     debug = 4'h1;
-                    D_game_fsm_d = 8'h47;
+                    D_game_fsm_d = 8'h48;
                 end
-                8'h43: begin
+                8'h44: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     wdsel = 1'h0;
                     regfile_wa = 3'h6;
                     regfile_we = 1'h1;
                     debug = 4'h1;
-                    D_game_fsm_d = 8'h44;
-                end
-                8'h44: begin
-                    alufn = 6'h1c;
-                    bsel = 2'h1;
-                    wdsel = 1'h0;
-                    regfile_wa = 3'h7;
-                    regfile_we = 1'h1;
-                    debug = 4'h1;
                     D_game_fsm_d = 8'h45;
                 end
                 8'h45: begin
                     alufn = 6'h1c;
-                    bsel = 2'h2;
+                    bsel = 2'h1;
                     wdsel = 1'h0;
-                    regfile_wa = 3'h4;
+                    regfile_wa = 3'h7;
                     regfile_we = 1'h1;
                     debug = 4'h1;
                     D_game_fsm_d = 8'h46;
@@ -1502,42 +1503,43 @@ module chopsticks_fsm (
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     wdsel = 1'h0;
+                    regfile_wa = 3'h4;
+                    regfile_we = 1'h1;
+                    debug = 4'h1;
+                    D_game_fsm_d = 8'h47;
+                end
+                8'h47: begin
+                    alufn = 6'h1c;
+                    bsel = 2'h2;
+                    wdsel = 1'h0;
                     regfile_wa = 3'h5;
                     regfile_we = 1'h1;
                     debug = 4'h1;
-                    D_game_fsm_d = 8'h1;
+                    D_game_fsm_d = 8'h2;
                 end
-                8'h47: begin
+                8'h48: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     wdsel = 1'h0;
                     regfile_wa = 3'h6;
                     regfile_we = 1'h1;
                     debug = 4'h1;
-                    D_game_fsm_d = 8'h48;
+                    D_game_fsm_d = 8'h49;
                 end
-                8'h48: begin
+                8'h49: begin
                     alufn = 6'h1c;
                     bsel = 2'h2;
                     wdsel = 1'h0;
                     regfile_wa = 3'h7;
                     regfile_we = 1'h1;
                     debug = 4'h1;
-                    D_game_fsm_d = 8'h1;
-                end
-                8'h49: begin
-                    alufn = 6'h1c;
-                    bsel = 2'h1;
-                    regfile_we = 1'h1;
-                    regfile_wa = 4'hc;
-                    wdsel = 2'h0;
-                    D_game_fsm_d = 8'h4a;
+                    D_game_fsm_d = 8'h2;
                 end
                 8'h4a: begin
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     regfile_we = 1'h1;
-                    regfile_wa = 4'hb;
+                    regfile_wa = 4'hc;
                     wdsel = 2'h0;
                     D_game_fsm_d = 8'h4b;
                 end
@@ -1545,7 +1547,7 @@ module chopsticks_fsm (
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     regfile_we = 1'h1;
-                    regfile_wa = 4'ha;
+                    regfile_wa = 4'hb;
                     wdsel = 2'h0;
                     D_game_fsm_d = 8'h4c;
                 end
@@ -1553,11 +1555,19 @@ module chopsticks_fsm (
                     alufn = 6'h1c;
                     bsel = 2'h1;
                     regfile_we = 1'h1;
-                    regfile_wa = 4'h9;
+                    regfile_wa = 4'ha;
                     wdsel = 2'h0;
                     D_game_fsm_d = 8'h4d;
                 end
                 8'h4d: begin
+                    alufn = 6'h1c;
+                    bsel = 2'h1;
+                    regfile_we = 1'h1;
+                    regfile_wa = 4'h9;
+                    wdsel = 2'h0;
+                    D_game_fsm_d = 8'h4e;
+                end
+                8'h4e: begin
                     alufn = 6'h16;
                     asel = 2'h0;
                     bsel = 2'h2;
@@ -1565,7 +1575,8 @@ module chopsticks_fsm (
                     regfile_we = 1'h1;
                     regfile_wa = 4'hd;
                     wdsel = 2'h0;
-                    D_game_fsm_d = 8'h1;
+                    D_pulse_sig_d = 1'h1;
+                    D_game_fsm_d = 8'h2;
                 end
             endcase
         end
@@ -1576,9 +1587,13 @@ module chopsticks_fsm (
         if ((rst) == 1'b1) begin
             D_game_fsm_q <= 8'h0;
             D_slow_clock_enable_q <= 1'h0;
+            D_diff_q <= 1'h0;
+            D_pulse_sig_q <= 1'h0;
         end else begin
             D_game_fsm_q <= D_game_fsm_d;
             D_slow_clock_enable_q <= D_slow_clock_enable_d;
+            D_diff_q <= D_diff_d;
+            D_pulse_sig_q <= D_pulse_sig_d;
         end
     end
 endmodule
